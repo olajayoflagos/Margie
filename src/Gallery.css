@@ -1,0 +1,22 @@
+.gallery-container {
+  padding: 3rem;
+  max-width: 2000px;
+  margin: auto;
+}
+.room-section {
+  margin-bottom: 3rem;
+}
+.room-images {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+}
+.room-images img {
+  width: 100%;
+  max-width: 250px;
+  border-radius: 10px;
+}
+.room-note {
+  font-style: italic;
+  color: #666;
+}
