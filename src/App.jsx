@@ -5,7 +5,7 @@ import AdminDashboard from "./AdminDashboard";
 import AdminLogin from "./AdminLogin";
 import CheckAvailability from "./CheckAvailability";
 import Gallery from "./Gallery";
-import HERO from "./assets/HERO.MOV";
+import HERO from "./assets/HERO.mp4";
 import logo from "./assets/margies logo.jpg";
 import "./App.css";
 
