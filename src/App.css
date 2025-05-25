@@ -1,4 +1,4 @@
-/* App.css */
+/* App.css - Part 1 */
 
 /* General body styles - let's rely more on the App div for layout */
 body {
@@ -44,12 +44,13 @@ body {
   height: 60px; /* Example size */
   width: auto; /* Maintain aspect ratio */
   object-fit: contain;
+  cursor: pointer; /* Indicate the logo is clickable */
 }
 
 /*.brand-name {
-  font-size: 28px; 
-  font-weight: 700; 
-  color: #1a73e8; 
+  font-size: 28px;
+  font-weight: 700;
+  color: #1a73e8;
 }*/
 
 .nav-links {
@@ -61,16 +62,46 @@ body {
   align-items: center; /* Align vertically */
 }
 
+.nav-links li {
+    margin: 0; /* Ensure no extra margin on list items */
+}
+
 .nav-links a {
   text-decoration: none;
   color: #555; /* Darker grey for links */
   font-weight: 500;
   transition: color 0.3s ease;
+  padding: 5px 0; /* Add some padding for click area */
+  position: relative; /* Needed for active indicator */
 }
 
 .nav-links a:hover {
   color: #1a73e8; /* Hover color matches brand blue */
 }
+
+/* Highlight current navigation link */
+.nav-links a.active {
+  color: #1a73e8; /* Active link color */
+  font-weight: 700; /* Make it bolder */
+  /* Optional: Add an indicator like an underline */
+  /* border-bottom: 2px solid #1a73e8; */
+}
+/* Optional: Underline indicator on hover/active */
+.nav-links a::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: 0;
+    left: 0;
+    background-color: #1a73e8;
+    transition: width 0.3s ease-in-out;
+}
+.nav-links a:hover::after,
+.nav-links a.active::after {
+    width: 100%;
+}
+
 
 /* Style for Admin Login/Logout button within nav */
 .admin-button-link {
@@ -91,6 +122,23 @@ body {
 }
 
 
+/* Focus state for all buttons and clickable elements */
+/* Using :focus-visible for better accessibility */
+button:focus-visible,
+.nav-links a:focus-visible,
+.logo:focus-visible, /* Ensure logo is focusable if it becomes a link */
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+.react-datepicker-wrapper input:focus-visible,
+.map-float:focus-visible,
+.whatsapp-float:focus-visible,
+.scroll-top-button:focus-visible {
+  outline: 3px solid #1a73e8; /* Clear outline */
+  outline-offset: 2px; /* Space around the element */
+}
+
+
 /* Hero section - Removed/ignored as carousel is used */
 
 
@@ -107,7 +155,7 @@ body {
 /* Main content area - allows footer to stick to bottom if content is short */
 main {
     flex-grow: 1;
-    padding-top: 20px; /* Add some space below the sticky header */
+    /* Removed padding-top here, handled by the first section's margin-top */
 }
 
 
@@ -121,12 +169,32 @@ main {
   font-size: 14px;
 }
 
+.footer a {
+    color: #f4f7f6;
+    text-decoration: none;
+    margin: 0 5px;
+    transition: color 0.3s ease;
+}
+
+.footer a:hover {
+    color: #1a73e8;
+}
+
+/* End of Part 1 */
+/* App.css - Part 2a */
 
 /* Carousel Styling */
+/* Overrides for react-responsive-carousel */
+/* Styling for the carousel container */
+.carousel-root {
+    width: 100%;
+    margin: 0 auto; /* Center the carousel if it has a max-width */
+}
+
 .carousel-slide {
   width: 100%;
   /* Adjust height - 100vh might be too tall on some screens */
-  height: 70vh; /* Example height */
+  height: 60vh; /* Slightly increased height */
   max-height: 600px; /* Max height cap */
   overflow: hidden;
   position: relative;
@@ -139,21 +207,43 @@ main {
   object-fit: cover;
 }
 
-/* react-responsive-carousel overrides */
 .carousel .slide img {
-  /* Override default if necessary, but .carouselmedia should handle it */
+  width: 100%; /* Ensure img fills container */
   height: 100%; /* Ensure img fills container */
   object-fit: cover;
 }
 
 .carousel .legend {
-  background: rgba(0, 0, 0, 0.6); /* Slightly darker legend */
-  font-size: 18px; /* Slightly smaller font */
-  padding: 10px 20px; /* Adjusted padding */
-  bottom: 20px; /* Position from bottom */
-  opacity: 1; /* Ensure legend is visible */
-  transition: opacity 0.3s ease;
+  position: absolute;
+  bottom: 10px; /* Position legend at the bottom */
+  left: 20px; /* Space from left */
+  right: 20px; /* Space from right */
+  background-color: rgba(0, 0, 0, 0.6); /* Semi-transparent background */
+  color: #fff; /* White text for contrast */
+  padding: 10px; /* Padding around text */
+  border-radius: 5px; /* Rounded corners for legend */
+  font-size: 1rem; /* Font size for legend */
+  text-align: center;
+  transition: opacity 0.3s ease; /* Smooth transition for hover effects */
 }
+/* Improve carousel controls visibility */
+.carousel .control-arrow {
+    opacity: 0.8 !important; /* Make arrows slightly more visible */
+    transition: opacity 0.3s ease !important;
+}
+.carousel .control-arrow:hover {
+    opacity: 1 !important;
+    background: rgba(0,0,0,0.6) !important; /* Darker background on hover */
+}
+.carousel .dot {
+    background: rgba(255,255,255,0.5) !important; /* Lighter dots */
+    box-shadow: none !important;
+    transition: background 0.3s ease;
+}
+.carousel .dot.selected {
+    background: #1a73e8 !important; /* Blue for selected dot */
+}
+
 
 /* Optional: Hide legend on hover if image is the focus */
 /* .carousel-slide:hover .legend {
@@ -184,26 +274,22 @@ main {
 .contact-form input,
 .contact-form textarea {
   padding: 12px;
-  font-size: 16px;
+  font-size: 1rem; /* Use rem for better scaling */
   border: 1px solid #ccc;
   border-radius: 5px; /* Slightly more rounded */
   width: calc(100% - 24px); /* Account for padding */
   box-sizing: border-box; /* Include padding and border in element's total width */
 }
 
-.contact-form input:focus,
-.contact-form textarea:focus {
-    outline: none;
-    border-color: #1a73e8; /* Highlight focus with blue */
-    box-shadow: 0 0 5px rgba(26, 115, 232, 0.3);
-}
+/* Styles for focus state handled by the general focus-visible rule above */
+
 
 .contact-form button {
   background-color: #1a73e8; /* Blue button */
   color: white;
   border: none;
   padding: 12px 20px; /* Adjusted padding */
-  font-size: 16px;
+  font-size: 1rem; /* Use rem */
   cursor: pointer;
   border-radius: 5px; /* Slightly rounded corners */
   transition: background-color 0.3s ease;
@@ -211,20 +297,30 @@ main {
   align-self: flex-start; /* Align button to the left */
 }
 
-.contact-form button:hover {
+.contact-form button:hover:not(:disabled) {
   background-color: #0f4ea6; /* Darker blue on hover */
 }
 
 /* Style for the status message */
-.contact-form + p { /* Targets the paragraph right after the form */
-    margin-top: 15px;
-    text-align: center;
-    font-weight: bold;
-    color: #1a73e8; /* Blue for success/info */
+.contact-status { /* Using a dedicated class */
+  margin-top: 15px;
+  text-align: center;
+  font-weight: bold;
+  padding: 8px;
+  border-radius: 4px;
 }
-/* Optional: Add specific classes for success/error status */
-/* .status-success { color: green; } */
-/* .status-error { color: red; } */
+
+.contact-status.success {
+    color: green;
+    background-color: #e8f5e9; /* Light green background */
+    border: 1px solid green;
+}
+
+.contact-status.error {
+    color: red;
+    background-color: #ffebee; /* Light red background */
+    border: 1px solid red;
+}
 
 
 /* Check Availability Section Styling */
@@ -262,7 +358,7 @@ main {
 /* Style for the select dropdown */
 .check-availability select {
   padding: 12px;
-  font-size: 16px;
+  font-size: 1rem; /* Use rem */
   border: 1px solid #ccc;
   border-radius: 5px;
   width: 100%; /* Make select fill container */
@@ -276,28 +372,27 @@ main {
   cursor: pointer;
 }
 
-.check-availability select:focus {
-    outline: none;
-    border-color: #1a73e8;
-    box-shadow: 0 0 5px rgba(26, 115, 232, 0.3);
-}
-
+/* Styles for focus state handled by the general focus-visible rule above */
 
 /* Specific styles for react-datepicker input */
+.react-datepicker-wrapper {
+    width: 100%; /* Make the datepicker wrapper fill its container */
+}
+
+.react-datepicker__input-container {
+    width: 100%; /* Make the datepicker input container fill its wrapper */
+}
+
 .react-datepicker-wrapper input {
     width: 100%; /* Make the datepicker input fill its container */
     padding: 12px;
-    font-size: 16px;
+    font-size: 1rem; /* Use rem */
     border: 1px solid #ccc;
     border-radius: 5px;
     box-sizing: border-box;
     cursor: pointer; /* Indicate clickable */
 }
-.react-datepicker-wrapper input:focus {
-     outline: none;
-    border-color: #1a73e8;
-    box-shadow: 0 0 5px rgba(26, 115, 232, 0.3);
-}
+/* Styles for focus state handled by the general focus-visible rule above */
 
 
 .check-availability button {
@@ -305,7 +400,7 @@ main {
   color: white;
   border: none;
   padding: 12px 20px;
-  font-size: 16px;
+  font-size: 1rem; /* Use rem */
   cursor: pointer;
   border-radius: 5px;
   transition: background-color 0.3s ease, opacity 0.3s ease;
@@ -323,26 +418,31 @@ main {
 }
 
 /* Style for the availability status message */
-.check-availability + p { /* Targets the paragraph right after the form */
+.availability-status { /* Using a dedicated class */
     margin-top: 15px;
     text-align: center;
     font-weight: bold;
-    color: #1a73e8; /* Blue for success/info */
+    padding: 8px;
+    border-radius: 4px;
 }
 /* Optional: Add specific classes for success/error status */
-/* .availability-success { color: green; } */
-/* .availability-error { color: red; } */
+/* You might add these classes dynamically in your JS */
+/* .availability-status.success { color: green; background-color: #e8f5e9; border: 1px solid green; } */
+/* .availability-status.error { color: red; background-color: #ffebee; border: 1px solid red; } */
+
 
 /* Admin Button from original App.css - Keeping for now but preferred using .admin-button-link */
+/* Consider if you still need this if you're using .admin-button-link in your HTML */
 .admin-button {
   padding: 10px 20px;
   background-color: #0077cc; /* Original blue */
   color: white;
-  font-size: 16px;
+  font-size: 1rem; /* Use rem */
   cursor: pointer;
   border: none;
   border-radius: 4px;
   margin-right: 20px; /* Keeping original margin */
+  transition: background-color 0.3s ease;
 }
 
 .admin-button:hover {
@@ -350,12 +450,123 @@ main {
 }
 
 
-/* Responsive adjustments */
+/* Floating Icons */
+.map-float, .whatsapp-float {
+  position: fixed;
+  width: 60px;
+  height: 60px;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  transition: all 0.3s ease;
+  animation: pulse 2s infinite; /* Keep the pulse animation */
+  text-decoration: none; /* Remove underline from links */
+}
+
+.map-float {
+  bottom: 100px; /* slightly above the WhatsApp icon */
+  right: 30px;
+  background-color: #ea4335; /* Google Maps red */
+}
+.map-float:hover {
+  background-color: #c5221f; /* Darker red on hover */
+  transform: scale(1.1);
+}
+.map-icon {
+  font-size: 32px;
+}
+
+.whatsapp-float {
+  bottom: 30px;
+  right: 30px;
+  background-color: #25D366; /* WhatsApp green */
+}
+.whatsapp-float:hover {
+  background-color: #128C7E; /* Darker green on hover */
+  transform: scale(1.1);
+}
+.whatsapp-icon {
+  font-size: 32px;
+}
+
+/* Pulse animation for floating icons */
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.4);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(0, 0, 0, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+    }
+}
+
+/* End of Part 2a */
+/* App.css - Part 2b */
+
+/* Scroll to Top Button */
+.scroll-top-button {
+  position: fixed;
+  bottom: 170px; /* Position above map icon */
+  right: 30px;
+  /* width: 50px; Adjust size if needed */
+  /* height: 50px; */
+  background: rgba(0, 0, 0, 0.6); /* Semi-transparent dark background */
+  color: white;
+  padding: 10px 12px; /* Padding for size */
+  border: none;
+  border-radius: 5px; /* Slightly rounded corners */
+  cursor: pointer;
+  z-index: 999; /* Below floating icons but above content */
+  font-size: 1rem; /* Use rem */
+  opacity: 0; /* Initially hidden */
+  visibility: hidden; /* Also hide from screen readers */
+  transition: opacity 0.3s ease, visibility 0.3s ease; /* Smooth transition */
+  display: flex; /* Center icon/text */
+  align-items: center;
+  justify-content: center;
+}
+
+.scroll-top-button.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+.scroll-top-button:hover {
+  background: rgba(0, 0, 0, 0.8); /* Darker on hover */
+}
+
+
+/* Responsive adjustments (Media Queries) */
+@media (max-width: 992px) {
+    /* Adjust larger screen padding/margins */
+    .section {
+        padding: 50px 25px;
+        margin: 15px auto;
+    }
+    .carousel-slide {
+        height: 55vh;
+        max-height: 550px;
+    }
+    .carousel .legend {
+         font-size: 0.9rem; /* Slightly smaller legend text */
+    }
+}
+
+
 @media (max-width: 768px) {
     .header {
         flex-direction: column;
         gap: 10px;
         padding: 15px 10px;
+    }
+    .logo {
+        height: 50px; /* Slightly smaller logo on mobile */
     }
     .nav-links {
         gap: 15px;
@@ -363,8 +574,16 @@ main {
         flex-wrap: wrap;
         justify-content: center;
     }
+    .nav-links a {
+        font-size: 0.95rem; /* Slightly smaller font */
+        padding: 3px 0; /* Adjust padding */
+    }
+    .admin-button-link {
+         font-size: 0.95rem; /* Match nav links */
+    }
     .section {
-        padding: 40px 15px;
+        padding: 40px 15px; /* More padding on smaller screens */
+        margin: 15px auto;
     }
      .contact-form,
      .check-availability {
@@ -378,93 +597,100 @@ main {
      .react-datepicker__input-container {
          width: 100%;
      }
-     .react-datepicker__input-container input {
+     .react-datepicker-wrapper input {
           width: 100%;
+          font-size: 1rem; /* Ensure consistent font size */
+     }
+    .contact-form input,
+    .contact-form textarea,
+    .check-availability select {
+        font-size: 1rem; /* Ensure consistent font size */
+    }
+    .contact-form button,
+    .check-availability button {
+        font-size: 1rem; /* Ensure consistent font size */
+        padding: 10px 18px; /* Slightly less padding */
+    }
+
+     /* Adjust floating icon positions */
+     .map-float, .whatsapp-float {
+         width: 50px;
+         height: 50px;
+         bottom: 80px; /* Adjust position */
+         right: 20px;
+     }
+    .whatsapp-float {
+         bottom: 20px; /* Adjust position */
+    }
+    .map-icon, .whatsapp-icon {
+        font-size: 28px; /* Slightly smaller icon size */
+    }
+
+     /* Adjust scroll-top button position */
+     .scroll-top-button {
+         bottom: 140px; /* Adjust position */
+         right: 20px;
+         padding: 8px 10px; /* Adjust padding */
+         font-size: 0.9rem; /* Slightly smaller font */
      }
 }
 
-.hero-banner {
-  position: relative;
-  width: 100%;
-  height: 90vh;
-  overflow: hidden;
-}
-.hero-video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-.hero-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.3);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.gallery-button {
-  padding: 1em 2em;
-  background-color: #ffcc00;
-  color: #000;
-  border: none;
-  font-size: 1.2rem;
-  cursor: pointer;
-  border-radius: 10px;
-  transition: background 0.3s ease;
-}
-.gallery-button:hover {
-  background-color: #e0b800;
+@media (max-width: 480px) {
+     .header {
+        padding: 10px;
+     }
+    .logo {
+        height: 45px; /* Even smaller logo */
+    }
+     .nav-links {
+         gap: 10px; /* Closer links */
+         margin-top: 8px;
+     }
+    .nav-links a, .admin-button-link {
+        font-size: 0.9rem;
+    }
+     .section {
+         padding: 30px 10px;
+         margin: 10px auto;
+     }
+     .contact-form,
+     .check-availability {
+        padding: 10px;
+     }
+     .contact-form input,
+     .contact-form textarea,
+     .check-availability select,
+     .react-datepicker-wrapper input {
+          font-size: 0.9rem;
+          padding: 10px;
+     }
+     .contact-form button,
+     .check-availability button {
+         font-size: 0.9rem;
+         padding: 8px 15px;
+     }
+
+     /* Further adjust floating icon positions */
+     .map-float, .whatsapp-float {
+         width: 45px;
+         height: 45px;
+         bottom: 70px; /* Adjust position */
+         right: 10px;
+     }
+    .whatsapp-float {
+         bottom: 10px; /* Adjust position */
+    }
+    .map-icon, .whatsapp-icon {
+        font-size: 24px; /* Smaller icon size */
+    }
+
+    /* Further adjust scroll-top button position */
+    .scroll-top-button {
+         bottom: 125px; /* Adjust position */
+         right: 10px;
+         padding: 6px 8px;
+         font-size: 0.8rem;
+    }
 }
 
-.map-float {
-  position: fixed;
-  bottom: 100px; /* slightly above the WhatsApp icon */
-  right: 30px;
-  width: 60px;
-  height: 60px;
-  background-color: #ea4335;
-  color: white;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  z-index: 1000;
-  transition: all 0.3s ease;
-  animation: pulse 2s infinite;
-}
-.map-float:hover {
-  background-color: #c5221f;
-  transform: scale(1.1);
-}
-.map-icon {
-  font-size: 32px;
-}
-
- .whatsapp-float {
-          position: fixed;
-          bottom: 30px;
-          right: 30px;
-          width: 60px;
-          height: 60px;
-          background-color: #25D366;
-          color: white;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-          z-index: 1000;
-          transition: all 0.3s ease;
-          animation: pulse 2s infinite;
-        }
-        .whatsapp-float:hover {
-          background-color: #128C7E;
-          transform: scale(1.1);
-        }
-        .whatsapp-icon {
-          font-size: 32px;
-        }
+/* End of Part 2b */
