@@ -96,15 +96,20 @@ const AdminDashboard = () => {
     }
   };
 
-  const filteredMessages = data.messages.filter(msg =>
-    msg.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    msg.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+ const filteredMessages = data.messages.filter(msg =>
+  // Use nullish coalescing to provide '' if msg.name or msg.email is null/undefined
+  (msg.name ?? '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+  (msg.email ?? '').toLowerCase().includes(searchTerm.toLowerCase())
+);
 
-  const filteredBookings = data.bookings.filter(booking =>
-    booking.guestName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    booking.roomName.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+
+ const filteredBookings = data.bookings.filter(booking =>
+  // Use nullish coalescing to provide '' if booking.guestName or booking.roomName is null/undefined
+  (booking.guestName ?? '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+  (booking.roomName ?? '').toLowerCase().includes(searchTerm.toLowerCase())
+);
+
+
 
   if (data.loading) return <div className="loading">Loading dashboard...</div>;
   if (data.error) return <div className="error">Error: {data.error}</div>;

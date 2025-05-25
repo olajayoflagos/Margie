@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef } from "react"; // Added useEffect and useRef
-import { BrowserRouter as Router, Routes, Route, Link, useLocation } from "react-router-dom"; // Added useLocation
-import { FaWhatsapp, FaMapMarkerAlt, FaArrowUp } from "react-icons/fa"; // Added FaArrowUp
-// Assuming db and Timestamp are initialized and exported from your firebase config file
-// For handleSubmitContact to work, you likely need these imports from Firebase SDK:
-// import { collection, addDoc } from 'firebase/firestore'; // Re-added Firestore imports based on original code
-// import { Timestamp } from 'firebase/firestore'; // Re-added Timestamp based on original code
-// NOTE: You need to ensure 'db' is initialized and imported correctly where this component can access it.
-// For example, if you have firebaseConfig.js: import { db } from './firebaseConfig';
+import { BrowserRouter as Router, Routes, Route, Link, useLocation, useNavigate } from "react-router-dom"; // Added useLocation, useNavigate
+
+import { FaWhatsapp, FaMapMarkerAlt, FaArrowUp, FaSun, FaMoon } from "react-icons/fa"; // Added FaArrowUp, FaSun, FaMoon
+
+// Make sure these Firestore imports are present
+import { collection, addDoc, Timestamp } from 'firebase/firestore';
+// And ensure your db is imported, matching how you export it from firebase.js
+import { db } from './firebase'; 
+
 
 
 import AdminDashboard from "./AdminDashboard";
@@ -54,8 +55,21 @@ function App() {
   const [showScrollTopButton, setShowScrollTopButton] = useState(false); // State for scroll-to-top button visibility
   const [activeSection, setActiveSection] = useState('home'); // State for active navigation link highlighting
 
+   // Theme state: initialize from localStorage or default to 'light'
+  const [theme, setTheme] = useState(() => {
+    const savedTheme = localStorage.getItem('theme');
+    return savedTheme || 'light'; // 'light' or 'dark'
+  });
+
   // Get current route location to help with nav highlighting
   const location = useLocation();
+  const navigate = useNavigate(); 
+  // Carousel click handler - defined inside App to use navigate
+  const handleCarouselClick = (index, item) => {
+      console.log("Carousel image clicked:", index, item.props.alt);
+      // Navigate to the gallery page
+      navigate('/gallery');
+  };
 
 
    // Carousel items - add an identifier for linking later
@@ -68,44 +82,32 @@ function App() {
     { src: Aronyx3, alt: "Onyx Room", caption: "Onyx Room", roomKey: "Aronyx3" },
   ];
 
-  // Function to handle contact form submission
-  // NOTE: This function relies on 'db' and 'Timestamp' being available in the scope.
-  // Make sure you have initialized Firebase Firestore and exported 'db' from your config file.
   const handleSubmitContact = async (e) => {
     e.preventDefault();
-    // Set status with loading text and class
-    setContactStatus({ message: "Sending message...", type: 'info' }); // Use 'info' type for loading
+    setContactStatus({ message: "Sending message...", type: 'info' });
 
     try {
-      // Assuming 'db' is available in the scope (imported or global)
-      // Ensure collection and addDoc are imported from firebase/firestore
-      // Ensure Timestamp is imported from firebase/firestore
-      // await addDoc(collection(db, "messages"), { // <-- Uncomment and ensure 'db' is defined
-      //   name: contactName,
-      //   email: contactEmail,
-      //   message: contactMessage,
-      //   created: Timestamp.now() // <-- Uncomment and ensure 'Timestamp' is defined
-      // });
-      // For demonstration purposes if Firebase is not fully set up:
-       console.log("Simulating message send:", { name: contactName, email: contactEmail, message: contactMessage });
-
-
-      // Set status for success
+      // Ensure db, collection, addDoc, and Timestamp are imported
+      await addDoc(collection(db, "messages"), {
+        name: contactName,
+        email: contactEmail,
+        message: contactMessage,
+        created: Timestamp.now()
+      });
       setContactStatus({ message: "Message sent successfully!", type: 'success' });
       setContactName("");
       setContactEmail("");
       setContactMessage("");
     } catch (err) {
-      // Set status for error
       setContactStatus({ message: "Error sending message. Please try again.", type: 'error' });
-      console.error("Error sending contact message:", err);
+      console.error("Error sending contact message to Firebase:", err); // Log the specific Firebase error
     }
 
-    // Clear status message after a few seconds
     setTimeout(() => {
-      setContactStatus(null); // Set back to null to hide the message
-    }, 5000); // Clear after 5 seconds (adjust as needed)
+      setContactStatus(null);
+    }, 5000);
   };
+
 
   const whatsappUrl = 'https://wa.me/+2348035350455?text=I will like to get information about Margies.';
   const mapsUrl = 'https://maps.app.goo.gl/Qb78GZHA61tEyM7XA?g_st=com.google.maps.preview.copy';
@@ -114,8 +116,19 @@ function App() {
   useEffect(() => {
     // This effect should only run if we are on the root path ("/")
     if (location.pathname !== '/') {
-        // If not on the home page, hide the scroll-to-top button and don't highlight sections
-        setShowScrollTopButton(false);
+
+      // Effect to apply theme class to the body and save to localStorage
+useEffect(() => {
+  // Apply the theme class to the body element
+  document.body.className = theme + '-mode'; // This will add 'light-mode' or 'dark-mode' class to the body
+
+  // Save the current theme preference to localStorage
+  localStorage.setItem('theme', theme);
+
+}, [theme]); // Re-run this effect whenever the 'theme' state changes
+
+
+        setShowScrollTopButton(true);
         // Reset active section state when leaving the home page
         setActiveSection(null); // Or set to a value indicating no section is active
         return; // Exit the effect early
@@ -135,7 +148,7 @@ function App() {
       let currentActive = 'home'; // Default to home section when at the very top
 
       // Show/hide scroll-to-top button
-      if (scrollY > 300) { // Show button after scrolling down 300px
+      if (scrollY > 1) { // Show button after scrolling down 300px
         setShowScrollTopButton(true);
       } else {
         setShowScrollTopButton(false);
@@ -190,6 +203,12 @@ function App() {
   }, [location.pathname, activeSection]); // Re-run effect if route changes or activeSection changes
 
   // Note: login/logout handlers are kept here as they are simple state updates
+
+  // Function to toggle between light and dark themes
+const toggleTheme = () => {
+  setTheme(currentTheme => (currentTheme === 'light' ? 'dark' : 'light'));
+};
+
 
   const handleLogin = () => {
     setIsLoggedIn(true);
@@ -249,6 +268,14 @@ function App() {
               {/* Keep the Link component for navigating to a different route */}
               {/* Add 'active' class to the Gallery link only when on the /gallery route */}
                <li><Link to="/gallery" className={location.pathname === '/gallery' ? 'active' : ''}>Gallery</Link></li>
+
+{/* Theme Toggle Button */}
+     {/* Use a button for clickability, and FaSun/FaMoon icons */}
+     <li>
+         <button onClick={toggleTheme} className="theme-toggle-button" aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}>
+             {theme === 'light' ? <FaMoon /> : <FaSun />} {/* Show Moon icon in light mode, Sun in dark mode */}
+         </button>
+     </li>
 
               {/* Admin Login/Logout buttons */}
               {/* Conditionally render based on isAdmin and isLoggedIn state */}
