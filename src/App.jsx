@@ -150,32 +150,23 @@ function App() {
   };
 
 
-  // --- Effects ---
-
-  // Effect 1: Handles applying the theme class to the body and saving to localStorage
-  // This effect runs whenever the 'theme' state changes
+ 
   useEffect(() => {
-    // Apply the theme class to the body element
-    // This adds either 'light-mode' or 'dark-mode' class
-    // We use `classList.remove` and `classList.add` for cleaner handling
+   
     document.body.classList.remove('light-mode', 'dark-mode'); // Remove both first
     document.body.classList.add(theme + '-mode'); // Add the current theme class
 
-    // Save the current theme preference to localStorage
+   
     localStorage.setItem('theme', theme);
 
   }, [theme]); // This effect depends solely on the 'theme' state
 
 
-  // Effect 2: Handles scroll events for scroll-to-top button visibility and navigation highlighting
-  // This effect should primarily run when on the root path ("/") or when location.pathname changes
+ 
   useEffect(() => {
-    // If not on the home page, the scroll logic for highlighting and the scroll-to-top button
-    // related to sections should generally be inactive.
-    // The theme effect is handled separately above and should always run.
+   
     if (location.pathname !== '/') {
-        // Optional: Reset active section state when leaving the home page
-        // setActiveSection(null); // Can uncomment if you want no link highlighted on other routes
+       
         setShowScrollTopButton(false); // Hide scroll-to-top button on other routes
         return; // Exit the effect early if not on the root path
     }
@@ -392,10 +383,6 @@ function App() {
                 legendary nightlife, with our building standing just moments away from the sizzling Suya grill spot where
                 Lagosians from all walks of life converge under the stars.
               </p>
-
-// End of Part 3
-// App.jsx - Part 4
-
               <p>
                 Whether you're here for business or pleasure, Margies offers the perfect blend of convenience and local flavor.
                 Need anything? Reach us at <strong>+234 803 535 0455</strong>, use our <strong>Contact Us</strong> form,

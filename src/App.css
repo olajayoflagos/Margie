@@ -919,6 +919,14 @@ body.dark-mode .nav-links a.active,
 body.dark-mode .admin-button-link:hover {
   color: var(--nav-link-hover-color);
 }
+body.dark-mode .section {
+  background-color: var(--section-bg);
+  box-shadow: var(--section-shadow);
+}
+body.dark-mode .footer {
+  background-color: var(--footer-bg);
+  color: var(--footer-text-color);
+}
 
 
 /* Focus state is handled by the general focus-visible rule */
