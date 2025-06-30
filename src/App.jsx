@@ -1,15 +1,15 @@
 import { useState, useEffect, useRef } from "react"; // Added useEffect and useRef
-import { BrowserRouter as Router, Routes, Route, Link, useLocation, useNavigate } from "react-router-dom"; // Added useLocation, useNavigate
-
+import {  Routes, Route, Link, useLocation, useNavigate, Navigate } from "react-router-dom"; // Added useLocation, useNavigate
 import { FaWhatsapp, FaMapMarkerAlt, FaArrowUp, FaSun, FaMoon } from "react-icons/fa"; // Added FaArrowUp, FaSun, FaMoon
-
-// Make sure these Firestore imports are present
 import { collection, addDoc, Timestamp } from 'firebase/firestore';
-// And ensure your db is imported, matching how you export it from firebase.js
-// Assuming './firebase' is the correct path to your Firebase initialization file
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { db } from './firebase';
-
-
+import Login from "./Login";
+import Signup from "./Signup";
+import ResetPassword from "./ResetPassword";
+import MyBookings from "./MyBookings";
+import { signOut } from "firebase/auth"; // at top
+import { createBookingRequest, fetchUserBookings } from "./bookingService";
 import AdminDashboard from "./AdminDashboard";
 import AdminLogin from "./AdminLogin";
 import CheckAvailability from "./CheckAvailability";
@@ -17,7 +17,6 @@ import Gallery from "./Gallery";
 import { Carousel } from 'react-responsive-carousel';
 import "react-responsive-carousel/lib/styles/carousel.min.css"; // Import carousel styles
 import logo from "./assets/margies logo.jpg";
-// Import your image assets
 import Aadiamond1 from "./assets/Aadiamond1.jpg";
 import Aaemerald1 from "./assets/Aaemerald1.jpg";
 import Aapartment3 from "./assets/Aapartment3.jpg";
@@ -26,9 +25,6 @@ import Arbronzite1 from "./assets/Arbronzite1.jpg";
 import Aronyx3 from "./assets/Aronyx3.jpg";
 import "./App.css";
 
-
-// Function to handle smooth scrolling for internal links
-// This function will be called by the navigation links and logo
 const scrollToSection = (id) => {
   const element = document.getElementById(id);
   if (element) {
@@ -40,37 +36,28 @@ const scrollToSection = (id) => {
 
 function App() {
   // --- State Variables ---
+  const auth = getAuth();
+const [currentUser, setCurrentUser] = useState(null);
+useEffect(() => {
+  onAuthStateChanged(auth, user => setCurrentUser(user));
+}, []);
   const [contactName, setContactName] = useState("");
   const [contactEmail, setContactEmail] = useState("");
   const [contactMessage, setContactMessage] = useState("");
   const [contactStatus, setContactStatus] = useState(null); // Changed to null initially for no message
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showScrollTopButton, setShowScrollTopButton] = useState(false); // State for scroll-to-top button visibility
   const [activeSection, setActiveSection] = useState('home'); // State for active navigation link highlighting
-
-   // Theme state: initialize from localStorage or default to 'light'
   const [theme, setTheme] = useState(() => {
     const savedTheme = localStorage.getItem('theme');
     return savedTheme || 'light'; // 'light' or 'dark'
   });
-
-  // --- React Router Hooks ---
-  // Get current route location to help with nav highlighting
   const location = useLocation();
-  // Get navigate function for programmatic navigation (e.g., from carousel click)
   const navigate = useNavigate();
-
-  // --- Handlers ---
-
-  // Carousel click handler - defined inside App to use navigate
   const handleCarouselClick = (index, item) => {
       console.log("Carousel image clicked:", index, item.props.alt);
       // Navigate to the gallery page
       navigate('/gallery');
   };
-
-  // Contact form submission handler
   const handleSubmitContact = async (e) => {
     e.preventDefault();
     // Set status with loading text and type
@@ -96,25 +83,17 @@ function App() {
        console.error("Error sending contact message to Firebase:", err); // Log the specific Firebase error
       }
 
-    // Clear status message after a few seconds (regardless of success or failure)
     setTimeout(() => {
       setContactStatus(null); // Set back to null to hide the message
     }, 5000); // Clear after 5 seconds (adjust as needed)
   };
 
-  // Admin login handler (simple state update)
-  const handleLogin = () => {
-    setIsLoggedIn(true);
-    setIsAdmin(true); // Assuming isAdmin is true when logged in to admin
+
+  const handleLogout = async () => {
+    await signOut(auth);
+    navigate("/", { replace: true });    // ← send them home
   };
 
-  // Admin logout handler (simple state update)
-  const handleLogout = () => {
-    setIsLoggedIn(false);
-    setIsAdmin(false); // Assuming isAdmin is false when logged out
-  };
-
-  // Scroll to top function for the scroll-to-top button
   const scrollToTop = () => {
     window.scrollTo({
       top: 0,
@@ -122,12 +101,6 @@ function App() {
     });
   };
 
-// End of Part 1
-// App.jsx - Part 2
-
-  // --- Data Definitions ---
-
-   // Carousel items data - add an identifier for linking later if needed
   const carouselItems = [
     { src: Aapartment3, alt: "Main Apartment", caption: "Main Apartment", roomKey: "Aapartment3" },
     { src: Aapartment5, alt: "Main Apartment 2", caption: "Main Apartment 2", roomKey: "Aapartment5" },
@@ -137,19 +110,13 @@ function App() {
     { src: Aronyx3, alt: "Onyx Room", caption: "Onyx Room", roomKey: "Aronyx3" },
   ];
 
-  // URLs for floating icons
   const whatsappUrl = 'https://wa.me/+2348035350455?text=I will like to get information about Margies.';
   const mapsUrl = 'https://maps.app.goo.gl/Qb78GZHA61tEyM7XA?g_st=com.google.maps.preview.copy';
 
-
-  // --- Theme Toggle Function ---
-  // Function to toggle between light and dark themes
   const toggleTheme = () => {
     // Update the theme state
     setTheme(currentTheme => (currentTheme === 'light' ? 'dark' : 'light'));
   };
-
-
  
   useEffect(() => {
    
@@ -161,8 +128,6 @@ function App() {
 
   }, [theme]); // This effect depends solely on the 'theme' state
 
-
- 
   useEffect(() => {
    
     if (location.pathname !== '/') {
@@ -185,43 +150,24 @@ function App() {
       // Default active section, usually 'home' when near the top
       let currentActive = 'home';
 
-      // Determine active navigation link based on scroll position
-      // Loop through sections in reverse order to prioritize sections lower on the page
       for (let i = sections.length - 1; i >= 0; i--) {
           const sectionId = sections[i];
           const sectionElement = document.getElementById(sectionId);
           if (sectionElement) {
               // Get the top position of the section relative to the top of the *document*
               const sectionTop = sectionElement.getBoundingClientRect().top + window.scrollY;
-              // Calculate the activation point. The section is considered active when its top
-              // is within a certain range from the top of the viewport, typically below the fixed header.
-              // Add a small buffer (e.g., 100-150px) below the header height to give some room
               const activationOffset = headerHeight() + 100; // Adjust buffer as needed
-
-              // Check if the current scroll position is at or past the section's activation point
               if (scrollY >= sectionTop - activationOffset) {
                   currentActive = sectionId;
-                  // Once a section is found that meets the criteria, we set it as active and stop checking
-                  // lower sections to prevent multiple links from being active or lower sections incorrectly
-                  // overriding higher ones when both are partially in view.
                   break;
               }
           }
       }
 
-      // Update active section state only if it changes to avoid unnecessary re-renders
-      // Only update if the determined section is one of the tracked ones
       if (sections.includes(currentActive) && activeSection !== currentActive) {
          setActiveSection(currentActive);
       }
-      // Optional: Handle case near the very top if 'home' wasn't caught
-      // if (scrollY < 50 && activeSection !== 'home') {
-      //     setActiveSection('home');
-      // }
 
-      // --- Scroll to Top Button Logic ---
-      // Show/hide scroll-to-top button based on scroll position
-      // Using 300px as the threshold, adjust as needed
       if (scrollY > 300) {
         setShowScrollTopButton(true);
       } else {
@@ -229,16 +175,10 @@ function App() {
       }
     };
 
-
-    // Add the scroll event listener when on the root path
     window.addEventListener('scroll', handleScroll);
 
-    // Initial check on mount to set the correct active section and button visibility
-    // Use a small delay to ensure all section elements are rendered and measured correctly
     const timeoutId = setTimeout(handleScroll, 100);
 
-
-    // Clean up the event listener and timeout when the component unmounts or route changes away from '/'
     return () => {
       window.removeEventListener('scroll', handleScroll);
       clearTimeout(timeoutId);
@@ -246,97 +186,76 @@ function App() {
 
   }, [location.pathname, activeSection]); // Re-run this effect if route changes or activeSection changes
 
-
-  // --- Helper function to get the class name for navigation links ---
-  // This determines which link gets the 'active' class based on current route and scroll position
   const getNavLinkClass = (sectionId) => {
-    // Only apply 'active' class if we are on the root path ("/")
-    // AND the section ID matches the currently determined activeSection state
     if (location.pathname === '/') {
         return activeSection === sectionId ? 'active' : '';
     } else if (location.pathname === '/gallery' && sectionId === 'gallery') {
-        // Handle the Gallery link specifically: it's active only when on the /gallery route
-        // (This assumes you add an identifier like 'gallery' to the Gallery Link element)
-        // In your current JSX, the Gallery Link is handled directly by checking location.pathname
-        // So this specific check might not be needed here, but is kept for illustration.
          return ''; // Or 'active' if you were passing 'gallery' to this function for the Link
     }
     return ''; // Default case: no active class
   };
 
-// End of Part 2
-// App.jsx - Part 3
-
-  // --- Rendered JSX ---
   return (
-    // The main App container. Consider adding the theme class here instead of body if preferred,
-    // but applying to body is standard for global theme changes.
     <div className="App">
       {/* --- Header --- */}
       <header className="header">
         <div className="brand-container">
-          {/* Make logo clickable to scroll to home */}
-          {/* Use a div with onClick for smooth scrolling to the section */}
-          {/* Add ARIA attributes for accessibility */}
           <div className="logo-container" onClick={() => scrollToSection('home')} role="button" aria-label="Scroll to home section" tabIndex="0">
               <img src={logo} alt="margies logo" className="logo" />
           </div>
         </div>
         <nav>
           <ul className="nav-links">
-            {/* Navigation Links */}
-            {/* Use anchor tags with onClick to trigger smooth scroll */}
-            {/* Conditionally add the 'active' class using the helper function */}
-            <li><a href="#home" onClick={(e) => { e.preventDefault(); scrollToSection('home'); }} className={getNavLinkClass('home')}>Home</a></li>
+            <li>
+  <Link to="/" onClick={e => {
+    e.preventDefault();
+    navigate('/');
+    // if you’re already on “/” this will kick you to the top:
+    scrollToSection('home');
+  }}>
+    Home
+  </Link>
+</li>
+
             <li><a href="#check" onClick={(e) => { e.preventDefault(); scrollToSection('check'); }} className={getNavLinkClass('check')}>Book Now</a></li>
             <li><a href="#about" onClick={(e) => { e.preventDefault(); scrollToSection('about'); }} className={getNavLinkClass('about')}>About</a></li>
             <li><a href="#contact" onClick={(e) => { e.preventDefault(); scrollToSection('contact'); }} className={getNavLinkClass('contact')}>Contact Us</a></li>
-
-            {/* Gallery Link - Use Link component for navigation to a different route */}
-            {/* Add 'active' class to the Gallery link only when on the /gallery route */}
              <li>
                 <Link to="/gallery" className={location.pathname === '/gallery' ? 'active' : ''}>Gallery</Link>
              </li>
-
-            {/* Theme Toggle Button */}
-            {/* Use a button for clickability, and FaSun/FaMoon icons */}
             <li>
                 <button onClick={toggleTheme} className="theme-toggle-button" aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}>
                     {/* Show Moon icon in light mode, Sun in dark mode */}
                     {theme === 'light' ? <FaMoon /> : <FaSun />}
                 </button>
             </li>
-
-            {/* Admin Login/Logout buttons */}
-            {/* Conditionally render based on isAdmin and isLoggedIn state */}
-            {/* Show Admin Login button if not in admin mode AND not logged in */}
-            {!isAdmin && !isLoggedIn && (
-              <li><button onClick={() => setIsAdmin(true)} className="admin-button-link">Admin Login</button></li>
-            )}
-             {/* Show Logout button if in admin mode AND logged in */}
-             {isAdmin && isLoggedIn && (
-              <li><button onClick={handleLogout} className="admin-button-link">Logout</button></li>
-            )}
-            {/* Note: This setup assumes isAdmin state is true only when attempting login or viewing admin dashboard.
-                 You might need to refine the logic for isAdmin based on actual authentication status or roles. */}
+         {/* START: user-aware nav links */}
+ {!currentUser && ( 
+   <> <li><Link to="/login">Log In</Link></li>
+       <li><Link to="/signup">Sign Up</Link></li>
+   </>
+ )}
+ {currentUser && currentUser.uid !== "aI2M8Jt2TrSav72XthNdvTHnHzD3" && (
+   <> <li><Link to="/my-bookings">My Bookings</Link></li>
+       <li><button onClick={handleLogout}>Logout</button></li>
+       <li className="nav-welcome">Hello, {currentUser.email}</li>
+   </>
+ )}
+ {currentUser && currentUser.uid === "aI2M8Jt2TrSav72XthNdvTHnHzD3" && (
+   <li><button onClick={handleLogout}>Admin Logout</button></li>
+ )}
           </ul>
         </nav>
       </header>
-
-      {/* --- Main Content & Routes --- */}
-      {/* Define routes using react-router-dom's Routes component */}
       <Routes>
-        {/* The main route ("/") conditional rendering for admin vs public view */}
-        <Route path="/" element={
-          isAdmin ? (
-            // If isAdmin is true, render Admin components
-            isLoggedIn ? <AdminDashboard /> : <AdminLogin onLogin={handleLogin} />
-          ) : (
-            // If isAdmin is false, render the public facing sections
-            <main> {/* Main content container for the public view */}
-
-            {/* Home Section with Carousel */}
-            {/* Add id="home" for smooth scrolling target and section highlighting */}
+<Route path="/" element={
+  currentUser?.uid === "aI2M8Jt2TrSav72XthNdvTHnHzD3"
+    ? <AdminDashboard />
+    : currentUser?.uid === "aI2M8Jt2TrSav72XthNdvTHnHzD3"
+      ? <AdminLogin />
+    : (
+      
+          <main>
             <section id="home" className="section no-padding-top"> {/* Added no-padding-top class for the carousel if needed in CSS */}
               <Carousel
                 autoPlay
@@ -356,22 +275,21 @@ function App() {
                   </div>
                 ))}
               </Carousel>
-            </section> {/* <-- End of the Home section */}
-
-            {/* Check Availability Section */}
-            {/* Add id="check" for smooth scrolling target and section highlighting */}
+            </section> 
             <section id="check" className="section">
               <h2>Check Room Availability</h2>
-              {/* Render the CheckAvailability component */}
-              {/* NOTE: If CheckAvailability contains Paystack logic, it will be untouched */}
-              <CheckAvailability />
-            </section> {/* <-- End of the Check Availability section */}
-
-            {/* About Section */}
-             {/* Add id="about" for smooth scrolling target and section highlighting */}
-            <section id="about" className="section">
-              <h2>Discover Margies</h2>
-              {/* Your existing About Us content */}
+{ currentUser
+  ? <CheckAvailability />
+  : (
+    <div className="booking-lock">
+      <p>Please <Link to="/login">log in</Link> or <Link to="/signup">sign up</Link> to book.</p>
+    </div>
+  )
+}
+            </section> 
+  <section id="about" className="section">
+    <h2>Discover Margies</h2>
+    {/* Your existing About Us content */}
               <p>
                 Nestled in the vibrant heart of Lagos Mainland at <strong>43, Oguntona Crescent, Gbagada Phase 1</strong>,
                 Margies is more than just accommodation - it's a cultural experience. Perched above a bustling indigenous
@@ -395,10 +313,7 @@ function App() {
                 from below, stroll to the supermarket across the street for essentials, and end your day sharing stories over
                 Suya with fellow guests and locals alike. This isn't just a stay - it's your Lagos story waiting to happen.
               </p>
-            </section> {/* <-- End of the About section */}
-
-            {/* Contact Section */}
-            {/* Add id="contact" for smooth scrolling target and section highlighting */}
+            </section> 
             <section id="contact" className="section">
               <h2>Contact Us</h2>
               {/* Contact Form */}
@@ -411,18 +326,12 @@ function App() {
                   value={contactMessage} onChange={(e) => setContactMessage(e.target.value)} required />
                 <button type="submit">Send Message</button>
               </form>
-              {/* Display status message with dynamic class */}
-              {/* contactStatus is an object { message: '...', type: '...' } or null */}
               {contactStatus && (
                 <p className={`contact-status ${contactStatus.type}`}>
                   {contactStatus.message}
                 </p>
               )}
-            </section> {/* <-- End of the Contact section */}
-
-            {/* Floating Icons */}
-            {/* Add ARIA labels for accessibility */}
-            {/* Ensure these links are correct and use the defined URLs */}
+            </section> 
             <a href={mapsUrl} className="map-float" target="_blank" rel="noopener noreferrer" aria-label="View location on Google Maps">
               <FaMapMarkerAlt className="map-icon" />
             </a>
@@ -437,20 +346,28 @@ function App() {
              )}
 
           </main> 
-        )
-      } /> {/* <-- End of the <Route path="/"> element */}
-
-      {/* Route for the Gallery page */}
-      {/* This route renders the Gallery component when the path is "/gallery" */}
+              )
+            } 
+      /> 
       <Route path="/gallery" element={<Gallery />} /> {/* <-- The Gallery Route */}
 
-    </Routes> {/* <-- End of Routes component */}
+      <Route path="/login" element={<Login />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/signup" element={<Signup />} />
+      <Route
+  path="/my-bookings"
+  element={
+    currentUser
+      ? <MyBookings />
+      : <Navigate to="/" replace />
+  }
+/>
 
+
+    </Routes>
     {/* --- Footer --- */}
     <footer className="footer">
       <p>&copy; 2025 Margie's. All rights reserved.</p>
-      {/* Footer links */}
-      {/* Ensure paths and attributes are correct */}
       <a href="/Privacy_Policy_Margies.pdf" download>Privacy Policy</a> |
       <a href="/Terms_Conditions_Margies.pdf" download>Terms & Conditions</a>
     </footer> {/* <-- End of footer */}

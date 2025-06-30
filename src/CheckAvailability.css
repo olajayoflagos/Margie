@@ -135,4 +135,43 @@
     font-size: 15px;
     padding: 12px;
   }
+.availability-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+.availability-form input {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid #ccd6df;
+  border-radius: 6px;
+  font-size: 16px;
+  box-sizing: border-box;
+}
+.availability-form input:focus {
+  border-color: #0056b3;
+  outline: none;
+}
+.total-cost {
+  font-weight: bold;
+  margin: 15px 0;
+  color: #003366;
+  text-align: center;
+}
+/* Tweak spacing and font for the new inputs */
+.availability-form input {
+  font-family: inherit;
+  font-size: 1rem;
+}
+
+/* Make the total-cost stand out a bit more */
+.total-cost {
+  font-size: 1.25rem;
+  margin: 1rem 0;
+  padding: 0.5rem;
+  background: #e6f4ff;
+  border-radius: 6px;
+}
+
 }

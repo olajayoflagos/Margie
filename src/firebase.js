@@ -1,13 +1,9 @@
-// src/firebase.js
-// Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
-import { getAuth } from "firebase/auth"; // Import getAuth
-import { getFunctions } from "firebase/functions"; // Import getFunctions
-// ... import other services like getStorage, etc.
+import { getFirestore, enableIndexedDbPersistence } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
+import { getFunctions } from "firebase/functions";
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+// Firebase config for Spark plan (replace with your project details)
 const firebaseConfig = {
   apiKey: "AIzaSyCRlOlAYLgKxC8yaYWn6y0k0SzDKYiDTnM",
   authDomain: "margies.firebaseapp.com",
@@ -20,10 +16,14 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-// Get and Export the initialized services
+// Initialize services
 const db = getFirestore(app);
-const auth = getAuth(app); // Get auth instance from the initialized app
-const functions = getFunctions(app); // Get functions instance from the initialized app
-// export const storage = getStorage(app); // Uncomment and get storage if you use it
+const auth = getAuth(app);
+const functions = getFunctions(app);
 
-export { app, db, auth, functions /* ... export other services */ };
+// Enable offline persistence for Firestore to reduce reads (Spark plan: 125K reads/month)
+enableIndexedDbPersistence(db).catch(err => {
+  console.warn("Offline persistence failed:", err);
+});
+
+export { app, db, auth, functions };

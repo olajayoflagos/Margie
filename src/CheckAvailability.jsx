@@ -1,187 +1,223 @@
-import React, { useState, useEffect } from 'react';
-import { db } from './firebase';
-import {
-  collection,
-  getDocs,
-  addDoc,
-  doc,
-  updateDoc
-} from 'firebase/firestore';
-import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
-import './CheckAvailability.css';
-import { getFunctions, httpsCallable } from 'firebase/functions';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { differenceInDays } from "date-fns";
+import { collection, getDocs } from "firebase/firestore";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { db } from "./firebase";
+import { checkRoomAvailability } from "./bookingService";
+import "./CheckAvailability.css";
 
-const CheckAvailability = () => {
+export default function CheckAvailability() {
+  const auth = getAuth();
+  const navigate = useNavigate();
+
+
+  // Form state
   const [rooms, setRooms] = useState([]);
   const [selectedRoom, setSelectedRoom] = useState(null);
-  const [guestName, setGuestName] = useState('');
-  const [guestEmail, setGuestEmail] = useState('');
+  const [guestName, setGuestName] = useState("");
+  const [guestEmail, setGuestEmail] = useState("");
+  const [partySize, setPartySize] = useState(1);
   const [checkIn, setCheckIn] = useState(null);
   const [checkOut, setCheckOut] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [successMsg, setSuccessMsg] = useState('');
-  const [errorMsg, setErrorMsg] = useState('');
 
+  // UI state
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [msg, setMsg] = useState({ type: "", text: "" });
+
+  // Load auth state
   useEffect(() => {
-    const fetchAvailableRooms = async () => {
+    onAuthStateChanged(auth, u => setUser(u));
+  }, []);
+
+  // Load available rooms once
+  useEffect(() => {
+    (async () => {
       setLoading(true);
       try {
-        const querySnapshot = await getDocs(collection(db, 'rooms'));
-        const availableRooms = [];
-        querySnapshot.forEach(doc => {
-          if (doc.data().available) {
-            availableRooms.push({ id: doc.id, ...doc.data() });
-          }
-        });
-        setRooms(availableRooms);
-      } catch (err) {
-        setErrorMsg('Failed to fetch rooms');
+        const snap = await getDocs(collection(db, "rooms"));
+        setRooms(
+          snap.docs
+            .map(d => ({ id: d.id, ...d.data() }))
+            .filter(r => r.available)
+        );
+      } catch {
+        setMsg({ type: "error", text: "Failed to load rooms." });
       } finally {
         setLoading(false);
       }
-    };
-
-    fetchAvailableRooms();
+    })();
   }, []);
 
-  const handleBookNow = async () => {
-    
-  setSuccessMsg('');
-  setErrorMsg('');
-  if (loading) return;
-  if (checkIn && checkOut && checkIn >= checkOut) {
-    setErrorMsg('Check-out date must be after check-in date');
-    return;
-  }
-  if (checkIn && checkIn < new Date()) {
-    setErrorMsg('Check-in date cannot be in the past');
-    return;
-  }
-  if (checkOut && checkOut < new Date()) {
-    setErrorMsg('Check-out date cannot be in the past');
-    return;
-  }
+  const handleBookAndPay = async () => {
+    setMsg({ type: "", text: "" });
 
-  if (!selectedRoom || !guestEmail || !guestName || !checkIn || !checkOut) {
-    setErrorMsg('Please fill in all fields');
-    return;
-  }
-
-  try {
-    setLoading(true);
-    const roomData = selectedRoom;
-
-    const bookingRef = await addDoc(collection(db, 'bookings'), {
-      guestName,
-      guestEmail,
-      checkIn: checkIn.toISOString().split('T')[0],
-      checkOut: checkOut.toISOString().split('T')[0],
-      roomId: roomData.id,
-      roomName: roomData.name,
-      amountPaid: roomData.price,
-      paymentMethod: 'Paystack - Card',
-      status: 'Pending',
-    });
-
-    // ✅ Correct Paystack setup
-    console.log('Type of window.PaystackPop:', typeof window.PaystackPop);
-    console.log('Type of window.PaystackPop.setup:', typeof window.PaystackPop.setup);
-
-    try {
-      if (window.PaystackPop && typeof window.PaystackPop.setup === 'function') {
-        const paystack = window.PaystackPop.setup({
-          key: 'pk_live_cb4309974c3aa9a757e93deee00f318d7b4ce241',
-          email: guestEmail,
-          amount: roomData.price * 100,
-          currency: 'NGN',
-          ref: `${Date.now()}`, // Optional: generate unique reference
-          callback: function(response) { // Removed async
-          console.log('Payment response received (simplified callback):', response);
-          },
-          onClose: function () {
-            setErrorMsg('Payment cancelled.');
-          },
-        });
-
-        paystack.openIframe();
-      } else {
-        setErrorMsg('Paystack payment could not be initialized.');
-      }
-    } catch (paystackError) {
-      console.error('Paystack error:', paystackError);
-      setErrorMsg('An error occurred while initializing payment.');
+    // Validation
+    if (!guestName || !guestEmail || partySize < 1) {
+      return setMsg({ type: "error", text: "Enter name, email & party size." });
+    }
+    if (!user) {
+      return navigate("/login");
+    }
+    if (!selectedRoom || !checkIn || !checkOut || checkIn >= checkOut) {
+      return setMsg({ type: "error", text: "Select room & valid dates." });
     }
 
-  } catch (error) {
-    console.error('Booking error:', error);
-    setErrorMsg('An error occurred while booking. Please try again.');
-  } finally {
-    setLoading(false);
-  }
-};
+    setLoading(true);
+    const nights = differenceInDays(checkOut, checkIn);
+    try {
+      // Check availability
+      const ok = await checkRoomAvailability({
+        roomId: selectedRoom.id,
+        start: checkIn.toISOString().slice(0, 10),
+        end: checkOut.toISOString().slice(0, 10),
+      });
+      if (!ok) {
+        setMsg({ type: "error", text: "Room not available for those dates." });
+        return;
+      }
+
+      // Compute amount
+      const amountPaid =
+        selectedRoom.price * nights;
+
+      // Launch Paystack
+if (
+  window.PaystackPop &&
+  typeof window.PaystackPop.setup === "function"
+) {
+  const paystack = window.PaystackPop.setup({
+    key: 'pk_live_cb4309974c3aa9a757e93deee00f318d7b4ce241',
+    email: guestEmail,
+    amount: selectedRoom.price * nights * 100, // Paystack expects amount in kobo
+    currency: "NGN",
+    ref: "" + Math.floor(Math.random() * 1000000000 + 1),
+    callback: function (res) {
+      // Wrap async operations in an IIFE so callback remains a plain function
+      (async () => {
+        await addDoc(collection(db, "bookings"), {
+          guestName,
+          guestEmail,
+          partySize,
+          roomId: selectedRoom.id,
+          roomName: selectedRoom.name,
+          checkIn: checkIn.toISOString().slice(0,10),
+          checkOut: checkOut.toISOString().slice(0,10),
+          nights,
+          amountPaid,
+          paymentRef: res.reference,
+          status: "active",
+          createdAt: serverTimestamp(),
+          userId: user.uid,
+        });
+        setMsg({ type: "success", text: "Booking confirmed!" });
+      })();
+    },
+    onClose: function () {
+      setMsg({ type: "error", text: "Payment cancelled." });
+    },
+  });
+  paystack.openIframe();
+} else {
+  setMsg({
+    type: "error",
+    text: "Could not initialize Paystack. Try again later.",
+  });
+}
+    } catch (e) {
+      console.error(e);
+      setMsg({
+        type: "error",
+        text: "Unexpected error. Please try again.",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="availability">
-      <h2>Check Room Availability</h2>
-
+      <h2>Check & Book a Room</h2>
       {loading && <div className="spinner"></div>}
-      {successMsg && <div className="alert alert-success">{successMsg}</div>}
-      {errorMsg && <div className="alert alert-error">{errorMsg}</div>}
+      {msg.text && (
+        <div className={`alert alert-${msg.type}`}>{msg.text}</div>
+      )}
 
-      <input
-        type="text"
-        placeholder="Your Full Name"
-        value={guestName}
-        onChange={e => setGuestName(e.target.value)}
-      />
-
-      <input
-        type="email"
-        placeholder="Your Email Address"
-        value={guestEmail}
-        onChange={e => setGuestEmail(e.target.value)}
-      />
-
-      <div>
-        <label>Check-In Date:</label>
-        <DatePicker
-          selected={checkIn}
-          onChange={date => setCheckIn(date)}
-          dateFormat="yyyy-MM-dd"
-          placeholderText="Select check-in date"
-          minDate={new Date()}
+      <div className="availability-form">
+        <input
+          type="text"
+          placeholder="Full Name"
+          value={guestName}
+          onChange={e => setGuestName(e.target.value)}
+          disabled={!user}
+        />
+        <input
+          type="email"
+          placeholder="Email Address"
+          value={guestEmail}
+          onChange={e => setGuestEmail(e.target.value)}
+          disabled={!user}
+        />
+        <input
+          type="number"
+          placeholder="Number of Individuals"
+          min="1"
+          value={partySize}
+          onChange={e => setPartySize(Math.max(1, +e.target.value))}
+          disabled={!user}
         />
       </div>
 
-      <div>
-        <label>Check-Out Date:</label>
-        <DatePicker
-          selected={checkOut}
-          onChange={date => setCheckOut(date)}
-          dateFormat="yyyy-MM-dd"
-          placeholderText="Select check-out date"
-          minDate={checkIn || new Date()}
-        />
-      </div>
+      {!user && <p><a href="/login">Log in</a> to book.</p>}
 
       <select
+        disabled={!user}
         onChange={e => setSelectedRoom(JSON.parse(e.target.value))}
         defaultValue=""
       >
-        <option value="" disabled> Select Available Room (15% Discount Ongoing) </option>
-        {rooms.map(room => (
-          <option key={room.id} value={JSON.stringify(room)}>
-            {room.name} - ₦{room.price}
+        <option value="" disabled>
+          Select Room
+        </option>
+        {rooms.map(r => (
+          <option key={r.id} value={JSON.stringify(r)}>
+            {r.name} – ₦{r.price}/night
           </option>
         ))}
       </select>
 
-      <button onClick={handleBookNow} disabled={loading}>
-        {loading ? 'Processing...' : 'Book and Pay'}
+      <DatePicker
+        selected={checkIn}
+        onChange={setCheckIn}
+        placeholderText="Check-in Date"
+        minDate={new Date()}
+        disabled={!user}
+      />
+      <DatePicker
+        selected={checkOut}
+        onChange={setCheckOut}
+        placeholderText="Check-out Date"
+        minDate={checkIn || new Date()}
+        disabled={!user}
+      />
+
+      {selectedRoom && checkIn && checkOut && (
+        <p className="total-cost">
+          {selectedRoom.name}: ₦{selectedRoom.price}×
+          {differenceInDays(checkOut, checkIn)} = ₦
+          {selectedRoom.price *
+            differenceInDays(checkOut, checkIn)}
+        </p>
+      )}
+
+      <button
+        onClick={handleBookAndPay}
+        disabled={loading || !user}
+      >
+        {loading ? "Processing…" : "Book & Pay"}
       </button>
     </div>
   );
-};
-
-export default CheckAvailability;
+}

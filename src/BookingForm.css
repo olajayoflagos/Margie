@@ -149,6 +149,25 @@
        .booking-form .react-datepicker__input-container input {
             width: 100%;
        }
+
+       /* Style the customer info inputs consistently */
+.booking-form-container input[type="text"],
+.booking-form-container input[type="email"],
+.booking-form-container input[type="number"] {
+  margin-top: 0;       /* remove extra gaps */
+  margin-bottom: 10px; /* consistent spacing */
+  width: 100%;
+}
+
+/* Highlight the total cost */
+.total-cost {
+  font-size: 1.3rem;
+  font-weight: 600;
+  text-align: center;
+  color: #003366;
+  margin: 15px 0;
+}
+
   }
   
   

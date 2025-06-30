@@ -5,10 +5,9 @@ import "react-datepicker/dist/react-datepicker.css";
 import { format, parseISO } from "date-fns";
 // Import the new CSS file for BookingForm
 import "./BookingForm.css";
-// Ensure the booking service functions are imported
-import { isRoomAvailable, bookRoomWithLinks, getUnavailableDates } from "./bookingService";
-
-// Re-using room options definition for the select dropdown
+import { createBookingRequest } from "./bookingService";
+import emailjs from "emailjs-com";
+import { differenceInDays } from "date-fns";
 const roomOptions = [
   { value: "apartment", label: "The Apartment" },
   { value: "diamond", label: "Room Diamond" },
@@ -21,9 +20,11 @@ const roomOptions = [
 // Assuming this component might receive props like initialRoomId or initialDates
 export default function BookingForm() {
   const [roomId, setRoomId] = useState(roomOptions[0].value); // Default to the first room
-  // Using an array of dates for multiple selections, if that's the design
-  // If it's always a range, the state could be { start: Date, end: Date }
-  // Current DatePicker setup selects a range, so dates array seems intended for the range
+ const [name, setName] = useState("");
+const [email, setEmail] = useState("");
+const [partySize, setPartySize] = useState(1);
+const [checkIn, setCheckIn] = useState(null);
+const [checkOut, setCheckOut] = useState(null);
   const [dates, setDates] = useState([]); // Array for [startDate, endDate]
   const [disabledDates, setDisabledDates] = useState([]); // Dates to disable in the picker
   const [status, setStatus] = useState(""); // To display booking status feedback
@@ -56,71 +57,65 @@ export default function BookingForm() {
   };
 
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (dates.length === 0 || !dates[0] || !dates[1]) {
-      setStatus("Please select a date range.");
-      return;
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  const nights = differenceInDays(checkOut, checkIn);
+  const amountPaid = roomOptions
+    .find(r => r.value === roomId).price
+    * nights;
+
+  // 1) Write booking & fire EmailJS confirmation
+  const bookingId = await createBookingRequest({
+    name, email, partySize,
+    roomId, dates: [checkIn, checkOut],
+    nights, amountPaid
+  });
+  await emailjs.send(
+    "service_3osbiq5",
+    "template_6aqw75p",
+    {
+      booking_id: bookingId,
+      email,
+      checkIn: checkIn.toISOString().slice(0,10),
+      checkOut: checkOut.toISOString().slice(0,10),
+      name,
+      roomName: roomOptions.find(r=>r.value===roomId).label,
+      amountPaid
     }
-    const [startDate, endDate] = dates;
-
-     if (startDate >= endDate) {
-         setStatus("End date must be after start date.");
-         return;
-     }
+  );
+  setStatus("Booking confirmed!");
+};
 
 
-    // Format dates for the booking service (exclusive of end date usually)
-    const selectedDateStrings = [];
-    let currentDate = new Date(startDate);
-     while (currentDate < endDate) {
-         selectedDateStrings.push(format(currentDate, "yyyy-MM-dd"));
-         currentDate.setDate(currentDate.getDate() + 1); // Move to the next day
-     }
-     // If booking includes the last night, add the end date too
-     // selectedDateStrings.push(format(endDate, "yyyy-MM-dd"));
-
-
-    setIsBooking(true); // Start loading
-    setStatus("Checking availability...");
-
-    try {
-      // Check availability using the service function
-      const available = await isRoomAvailable(roomId, selectedDateStrings);
-
-      if (!available) {
-        setStatus("Room or linked room already booked for these dates.");
-        setIsBooking(false);
-        return;
-      }
-
-      setStatus("Booking...");
-      // Book the room using the service function
-      await bookRoomWithLinks(roomId, selectedDateStrings);
-      setStatus("Room booked successfully!");
-
-      // Optional: Clear selected dates or update UI after successful booking
-      setDates([]); // Clear selected range
-      // You might want to trigger a reload of disabled dates here too
-      const updatedDisabledDates = await getUnavailableDates(roomId);
-      const parsed = updatedDisabledDates.map(dateStr => parseISO(dateStr));
-      setDisabledDates(parsed);
-
-    } catch (err) {
-      setStatus("Error during booking.");
-      console.error("Booking process failed:", err);
-    } finally {
-      setIsBooking(false); // End loading
-    }
-  };
-
-
+ 
   return (
     // Added a className to the main div
     <div className="booking-form-container">
       <h3>Book a Room</h3> {/* This will use themed h3 style */}
       <form onSubmit={handleSubmit} className="booking-form"> {/* Added form class */}
 
+        <input
+            type="text"
+            placeholder="Your Name"
+            value={name}
+            onChange={e => setName(e.target.value)}
+            required
+        />
+        <input
+            type="email"
+            placeholder="Your Email"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            required
+        />
+        <input
+            type="number"
+            min="1"
+            placeholder="Number of Guests"
+            value={partySize}
+            onChange={e => setPartySize(e.target.value)}
+            required
+        />
         <label htmlFor="room-select">Select Room:</label> {/* Added label htmlFor */}
         <select
           id="room-select" // Match label htmlFor
@@ -150,6 +145,14 @@ export default function BookingForm() {
         />
 
         <br />
+        {checkIn && checkOut && (
+            <p className="total-cost">
+                Total Cost: ₦{
+                    roomOptions.find(room => room.value === roomId).price
+                     * differenceInDays(checkOut, checkIn)
+                } 
+            </p>
+        )}
         <button type="submit" className="booking-form-button" disabled={isBooking}>
            {isBooking ? "Processing..." : "Book Now"} {/* Button text based on loading state */}
         </button>
