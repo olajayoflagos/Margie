@@ -9,7 +9,7 @@ import Aadiamond1 from "./assets/Aadiamond1.jpg";
 import Aaemerald1 from "./assets/Aaemerald1.jpg";
 import Aronyx3 from "./assets/Aronyx3.jpg";
 import Arbronzite1 from "./assets/Arbronzite1.jpg";
-import apt2 from "./assets/Aapartment5.jpg";
+import Aapartment5 from "./assets/Aapartment5.jpg";
 
 export default function LandingPage() {
   const [mobileOpen, setMobileOpen] = useState(false);
