@@ -4,11 +4,11 @@ import "./LandingPage.css";
 
 // Images — update paths if yours differ
 import logo from "./assets/margies logo.jpg";
-import heroImg from "./assets/Aapartment3.jpg";
-import roomDiamond from "./assets/Aadiamond1.jpg";
-import roomEmerald from "./assets/Aaemerald1.jpg";
-import roomOnyx from "./assets/Aronyx3.jpg";
-import roomBronzite from "./assets/Arbronzite1.jpg";
+import Aapartment3 from "./assets/Aapartment3.jpg";
+import Aadiamond1 from "./assets/Aadiamond1.jpg";
+import Aaemerald1 from "./assets/Aaemerald1.jpg";
+import Aronyx3 from "./assets/Aronyx3.jpg";
+import Arbronzite1 from "./assets/Arbronzite1.jpg";
 import apt2 from "./assets/Aapartment5.jpg";
 
 export default function LandingPage() {
