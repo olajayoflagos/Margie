@@ -14,6 +14,7 @@ import AdminDashboard from "./AdminDashboard";
 import AdminLogin from "./AdminLogin";
 import CheckAvailability from "./CheckAvailability";
 import Gallery from "./Gallery";
+import LandingPage from "./LandingPage";
 import { Carousel } from 'react-responsive-carousel';
 import "react-responsive-carousel/lib/styles/carousel.min.css"; // Import carousel styles
 import logo from "./assets/margies logo.jpg";
@@ -350,7 +351,7 @@ useEffect(() => {
             } 
       /> 
       <Route path="/gallery" element={<Gallery />} /> {/* <-- The Gallery Route */}
-
+Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<Login />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/signup" element={<Signup />} />
