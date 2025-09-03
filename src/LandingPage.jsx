@@ -17,7 +17,7 @@ export default function LandingPage() {
   const whatsappUrl =
     "https://wa.me/+2348035350455?text=I will like to get information about Margies.";
   const mapsUrl =
-    "https://maps.app.goo.gl/Qb78GZHA61tEyM7XA?g_st=com.google.maps.preview.copy";
+    "https://maps.app.goo.gl/M4WBE1tK61HsQqdf7";
 
   const rooms = [
     {
@@ -273,8 +273,7 @@ export default function LandingPage() {
             loading="lazy"
             allowFullScreen
             referrerPolicy="no-referrer-when-downgrade"
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d7926.616... (replace with your full embed URL)"
-          />
+            src="https://maps.app.goo.gl/M4WBE1tK61HsQqdf7"          />
         </div>
         <div className="center">
           <a href={mapsUrl} target="_blank" rel="noreferrer" className="btn btn--primary">
