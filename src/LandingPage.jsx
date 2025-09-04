@@ -268,13 +268,13 @@ export default function LandingPage() {
           <p>43, Oguntona Crescent, Gbagada Phase 1, Lagos</p>
         </div>
         <div className="map-wrap">
-          <iframe
-            title="Margie's on Google Maps"
-            loading="lazy"
-            allowFullScreen
-            referrerPolicy="no-referrer-when-downgrade"
-            src="https://maps.app.goo.gl/Qb78GZHA61tEyM7XA?g_st=com.google.maps.preview.copy"
-          />
+ <iframe
+  title="Margie's on Google Maps"
+  loading="lazy"
+  allowFullScreen
+  referrerPolicy="no-referrer-when-downgrade"
+  src="https://www.google.com/maps?q=43%20Oguntona%20Crescent%2C%20Gbagada%20Phase%201%2C%20Lagos&output=embed"
+/>
         </div>
         <div className="center">
           <a href={mapsUrl} target="_blank" rel="noreferrer" className="btn btn--primary">
