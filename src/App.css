@@ -1,4 +1,4 @@
-/* ============ ROOT & THEME ============ */
+/* ================= ROOT & THEME ================= */
 :root{
   --brand:#f8d24b;
   --brand-dark:#e2c33f;
@@ -15,197 +15,179 @@
 
 .light-mode{ background:var(--bg); color:var(--text); }
 .dark-mode { background:#0e0f14; color:#e9e9e9; }
-
-.dark-mode .section{ background:#12131a; }
-.dark-mode .header{ background:rgba(0,0,0,.6); backdrop-filter:blur(6px); border-color:#22263a; }
-.dark-mode .data-table{ background:#171923; color:#e9e9e9; }
-.dark-mode .data-table th,
-.dark-mode .data-table td{ border-color:#22263a; }
+.dark-mode .header{ background:rgba(0,0,0,.6); border-color:#22263a; backdrop-filter:blur(6px); }
 .dark-mode a{ color:#9ecbff; }
 
-/* ============ LAYOUT ============ */
+/* ================= LAYOUT ================= */
 .App{ min-height:100vh; display:flex; flex-direction:column; }
 
-.section{
-  padding:3rem 1rem;
-  max-width:1200px;  /* centered site width */
-  margin:0 auto;
-}
+.section{ padding:3rem 1rem; max-width:1200px; margin:0 auto; }
 .no-padding-top{ padding-top:0; }
 
-/* ============ HEADER / NAV ============ */
+/* ================= HEADER / NAV ================= */
 .header{
-  position:sticky; top:0; z-index:50;
-  background:rgba(255,255,255,.9);
+  position:sticky; top:0; z-index:100;
+  background:rgba(255,255,255,.92);
   backdrop-filter:blur(6px);
   border-bottom:1px solid var(--border);
 }
-
-.brand-container{
-  display:flex; align-items:center; justify-content:space-between;
-  padding:.75rem 1rem .5rem;
-}
-
-.logo-container{ display:flex; align-items:center; gap:.5rem; cursor:pointer; }
+.brand-container{ display:flex; align-items:center; gap:.6rem; padding:.75rem 1rem; cursor:pointer; }
 .logo{ height:42px; width:42px; border-radius:50%; object-fit:cover; }
 
-.nav-links{
-  display:flex; align-items:center; gap:.6rem;
-  list-style:none; margin:0; padding:.4rem 1rem 1rem;
-  flex-wrap:nowrap;           /* single row */
-  overflow-x:auto;            /* scroll if it overflows */
-  scrollbar-width:none;
-}
-.nav-links::-webkit-scrollbar{ display:none; }
+nav{ position:relative; }
 
+/* --- mobile hamburger (needs the tiny JSX toggle snippet) --- */
+.nav-toggle{ display:none; }
+
+/* the 3 lines */
+.hamburger{
+  display:none;
+  position:absolute; right:12px; top:10px;
+  width:44px; height:44px; border-radius:10px;
+  border:1px solid var(--border); background:var(--bg);
+  align-items:center; justify-content:center;
+  box-shadow:var(--shadow); cursor:pointer;
+}
+.hamburger span,
+.hamburger span::before,
+.hamburger span::after{
+  content:""; display:block; width:20px; height:2px; background:currentColor;
+  position:relative; transition:.25s;
+}
+.hamburger span::before{ position:absolute; top:-6px; left:0; }
+.hamburger span::after { position:absolute; top:6px;  left:0; }
+
+/* rotate to X when open */
+.nav-toggle:checked + .hamburger span{ background:transparent; }
+.nav-toggle:checked + .hamburger span::before{ transform:translateY(6px) rotate(45deg); }
+.nav-toggle:checked + .hamburger span::after{  transform:translateY(-6px) rotate(-45deg); }
+
+/* --- links --- */
+.nav-links{
+  list-style:none; margin:0; padding:.4rem 1rem 1rem;
+  display:flex; gap:.6rem; align-items:center; flex-wrap:wrap;
+}
 .nav-links a, .nav-links button{
   color:inherit; text-decoration:none; font-weight:500;
   padding:.45rem .75rem; border-radius:8px;
   border:1px solid transparent; background:transparent; cursor:pointer;
-  white-space:nowrap;
 }
-
 .nav-links a.active,
 .nav-links a:hover,
-.nav-links button:hover{
-  background:var(--bg-soft); border-color:var(--border);
-}
-
+.nav-links button:hover{ background:var(--bg-soft); border-color:var(--border); }
 .theme-toggle-button{ border:1px solid var(--border); background:var(--bg); }
 
-/* CTA buttons in nav */
+/* pill buttons for auth */
 .btn-yellow{
-  display:inline-flex; align-items:center; justify-content:center;
-  padding:.5rem 1rem; border-radius:999px; font-weight:700;
-  background:var(--brand); color:#000; border:none; white-space:nowrap;
+  background:var(--brand); color:#000; border:none;
+  border-radius:999px; padding:.5rem 1rem; font-weight:700;
   box-shadow:0 8px 18px rgba(248,210,75,.35);
 }
 .btn-yellow:hover{ background:var(--brand-dark); }
-
 .btn-grey{
-  display:inline-flex; align-items:center; justify-content:center;
-  padding:.5rem 1rem; border-radius:999px; font-weight:700;
-  background:#e9ecef; color:#111; border:1px solid #dadde1; white-space:nowrap;
+  background:#e9ecef; color:#111; border:1px solid #dadde1;
+  border-radius:999px; padding:.5rem 1rem; font-weight:700;
 }
 .btn-grey:hover{ background:#dfe4e8; }
 
-/* ============ HERO / CAROUSEL ============ */
+.admin-button-link{ background:#111; color:#fff; border:1px solid #111; border-radius:8px; padding:.45rem .8rem; }
+.admin-button-link:hover{ opacity:.9; }
+
+/* ================= HERO / CAROUSEL ================= */
 .carouselmedia{ width:100%; max-height:72vh; object-fit:cover; }
 
-/* ============ AVAILABILITY CARD (full-width) ============ */
-/* Your CheckAvailability root has class="availability" */
+/* ================= AVAILABILITY CARD ================= */
 .availability{
-  width:100%;                 /* fill section width on desktop */
-  background:var(--bg);
-  border:1px solid var(--border);
-  border-radius:16px;
-  box-shadow:var(--shadow);
-  padding:1.25rem;
-  margin:0 auto;              /* center it inside .section */
+  width:100%; background:var(--bg); border:1px solid var(--border);
+  border-radius:16px; box-shadow:var(--shadow);
+  padding:1.25rem; margin:0 auto;
 }
 .availability h2{ margin-top:0; }
-.availability .alert{
-  margin:.5rem 0; padding:.75rem 1rem; border-radius:10px; font-weight:600;
-}
-.availability .alert-success{ background:#e9f9ef; color:#167c3f; }
-.availability .alert-error{ background:#fdecec; color:#b42318; }
-.availability .spinner{
-  width:22px; height:22px; border-radius:50%;
-  border:3px solid var(--border); border-top-color:#999; animation:spin 1s linear infinite;
-}
-@keyframes spin{ to{ transform:rotate(360deg); } }
-
-.availability input,
-.availability select{
-  width:100%; max-width:100%;
-  padding:.8rem .9rem; border:1px solid var(--border);
-  border-radius:10px; background:var(--bg); color:inherit; margin:.4rem 0 .8rem;
+.availability input, .availability select{
+  width:100%; padding:.85rem 1rem; border:1px solid var(--border);
+  border-radius:10px; background:var(--bg); color:inherit; margin:.45rem 0 .9rem;
 }
 .availability button{
-  width:100%; padding:.95rem 1rem; border:none; border-radius:10px;
+  width:100%; padding:1rem 1.1rem; border:none; border-radius:10px;
   background:var(--brand); color:#000; font-weight:700; cursor:pointer;
   box-shadow:0 10px 22px rgba(248,210,75,.35);
 }
 .availability button:hover{ background:var(--brand-dark); }
+.availability .alert{ margin:.5rem 0; padding:.75rem 1rem; border-radius:10px; font-weight:600; }
+.availability .alert-success{ background:#e9f9ef; color:#167c3f; }
+.availability .alert-error{   background:#fdecec; color:#b42318; }
 
-/* ============ CONTACT CARD (full-width) ============ */
+/* ================= CONTACT CARD ================= */
 #contact .contact-form{
-  width:100%;                 /* fill section width on desktop */
-  max-width:none;             /* remove old cap */
-  background:var(--bg);
-  border:1px solid var(--border);
-  border-radius:16px;
-  box-shadow:var(--shadow);
-  padding:1.25rem;
-  display:grid; gap:.9rem;
+  width:100%; background:var(--bg); border:1px solid var(--border);
+  border-radius:16px; box-shadow:var(--shadow);
+  padding:1.25rem; display:grid; gap:.9rem;
 }
-
-/* two columns on large screens; one column on mobile */
-@media (min-width: 992px){
-  #contact .contact-form{ grid-template-columns:1fr 1fr; }
-  #contact .contact-form input:nth-of-type(1),
-  #contact .contact-form input:nth-of-type(2){ grid-column:auto; }
-  #contact .contact-form textarea{ grid-column:1 / -1; }
-  #contact .contact-form button{ grid-column:1 / -1; }
-}
-
-/* fields */
-.contact-form input,
-.contact-form textarea{
-  padding:.9rem 1rem; border:1px solid var(--border);
+#contact .contact-form input,
+#contact .contact-form textarea{
+  padding:.95rem 1rem; border:1px solid var(--border);
   border-radius:10px; background:var(--bg); color:inherit;
 }
-.contact-form textarea{ min-height:160px; resize:vertical; }
-.contact-form button{
+#contact .contact-form textarea{ min-height:160px; resize:vertical; }
+#contact .contact-form button{
   background:var(--brand); color:#000; font-weight:700; border:none;
   padding:1rem 1.1rem; border-radius:10px; cursor:pointer;
   box-shadow:0 10px 22px rgba(248,210,75,.35);
 }
-.contact-form button:hover{ background:var(--brand-dark); }
-
+#contact .contact-form button:hover{ background:var(--brand-dark); }
 .contact-status{ margin-top:.5rem; font-weight:600; }
 .contact-status.info{ color:var(--info); }
 .contact-status.success{ color:var(--success); }
 .contact-status.error{ color:var(--danger); }
 
-/* ============ FLOATING ACTIONS ============ */
+/* ================= FULL-BLEED DESKTOP ================= */
+@media (min-width: 992px){
+  #check .availability,
+  #contact .contact-form{
+    width:100vw; max-width:100vw;
+    position:relative; left:50%; right:50%;
+    margin-left:-50vw; margin-right:-50vw;
+    border-radius:0;
+    padding:2rem 4vw;
+  }
+}
+
+/* ================= FLOATING ACTIONS ================= */
 .map-float, .whatsapp-float{
   position:fixed; right:16px; width:48px; height:48px; border-radius:50%;
-  display:grid; place-items:center; color:#fff; z-index:60;
-  box-shadow:0 6px 18px rgba(0,0,0,.2);
+  display:grid; place-items:center; color:#fff; z-index:60; box-shadow:0 6px 18px rgba(0,0,0,.2);
 }
 .map-float{ bottom:96px; background:#e74c3c; }
 .whatsapp-float{ bottom:36px; background:#25d366; }
 .map-icon, .whatsapp-icon{ font-size:1.2rem; }
 
-/* ============ SCROLL TO TOP ============ */
+/* ================= SCROLL TO TOP ================= */
 .scroll-top-button{
   position:fixed; bottom:160px; right:16px; width:46px; height:46px;
   border-radius:50%; border:none; background:#000; color:#fff; cursor:pointer;
   z-index:55; box-shadow:0 5px 16px rgba(0,0,0,.2);
 }
 
-/* ============ AUTH FORMS (Login / Signup / Reset) ============ */
+/* ================= AUTH FORMS ================= */
 .auth-form{
-  max-width:520px; width:100%;
-  margin:2rem auto; padding:1.5rem;
+  max-width:520px; width:100%; margin:2rem auto; padding:1.5rem;
   border:1px solid var(--border); border-radius:12px; background:var(--bg);
   box-shadow:var(--shadow);
 }
 .auth-form h2{ margin-bottom:.5rem; }
 .auth-form input{
-  width:100%; padding:.9rem 1rem; border:1px solid var(--border);
+  width:100%; padding:.95rem 1rem; border:1px solid var(--border);
   border-radius:10px; background:var(--bg); color:inherit; margin:.5rem 0;
 }
 .auth-form button{
   width:100%; padding:1rem 1.1rem; border:none; border-radius:10px;
   background:var(--brand); color:#000; font-weight:700; cursor:pointer;
-  margin-top:.5rem; box-shadow:0 10px 22px rgba(248,210,75,.35);
+  box-shadow:0 10px 22px rgba(248,210,75,.35);
 }
 .auth-form button:hover{ background:var(--brand-dark); }
 .auth-form .error{ color:var(--danger); font-weight:600; }
 
-/* ============ MY BOOKINGS ============ */
+/* ================= MY BOOKINGS ================= */
 .my-bookings{ max-width:900px; margin:2rem auto; }
 .my-bookings ul{ list-style:none; padding:0; display:grid; gap:1rem; }
 .my-bookings li{
@@ -218,38 +200,34 @@
 }
 .my-bookings button:hover{ background:var(--bg-soft); }
 
-/* ============ TABLES (Admin) ============ */
-.data-table{
-  width:100%; border-collapse:collapse; background:#fff;
-  border:1px solid var(--border); border-radius:10px; overflow:hidden;
-}
-.data-table th, .data-table td{
-  border-bottom:1px solid var(--border); padding:.75rem; text-align:left;
-}
-.status-badge{
-  padding:.25rem .55rem; border-radius:999px; font-size:.85rem;
-  background:var(--bg-soft); border:1px solid var(--border);
-}
+/* ================= TABLES (ADMIN) ================= */
+.data-table{ width:100%; border-collapse:collapse; background:#fff; border:1px solid var(--border); border-radius:10px; overflow:hidden; }
+.data-table th, .data-table td{ border-bottom:1px solid var(--border); padding:.75rem; text-align:left; }
+.status-badge{ padding:.25rem .55rem; border-radius:999px; font-size:.85rem; background:var(--bg-soft); border:1px solid var(--border); }
 
-/* ============ FOOTER ============ */
-.footer{
-  margin-top:auto; border-top:1px solid var(--border);
-  padding:1rem; text-align:center; background:var(--bg);
-}
+/* ================= FOOTER ================= */
+.footer{ margin-top:auto; border-top:1px solid var(--border); padding:1rem; text-align:center; background:var(--bg); }
 .footer a{ color:#0077cc; margin:0 .35rem; }
 
-/* ============ UTIL ============ */
-.booking-lock{
-  border:1px dashed var(--border); padding:1rem; border-radius:10px; background:var(--bg-soft);
+/* ================= RESPONSIVE NAV BEHAVIOR ================= */
+@media (max-width: 992px){
+  /* show the burger, hide list by default */
+  .hamburger{ display:flex; }
+  .nav-links{
+    position:absolute; left:0; right:0; top:58px;
+    display:flex; flex-direction:column; gap:.25rem;
+    background:var(--bg); border-top:1px solid var(--border);
+    box-shadow:var(--shadow);
+    padding:.5rem; margin:0;
+    max-height:0; overflow:hidden; transform-origin:top; transition:max-height .25s ease;
+    z-index:90;
+  }
+  /* when checked, drop down */
+  .nav-toggle:checked ~ .nav-links{ max-height:80vh; }
+  /* make links larger for touch */
+  .nav-links a, .nav-links button{ padding:.8rem 1rem; border-radius:10px; }
+  .brand-container{ padding-right:64px; } /* room for burger */
 }
-.nav-welcome{ font-size:.9rem; color:var(--muted); }
 
-/* ============ RESPONSIVE TWEAKS ============ */
-@media (max-width:768px){
-  .brand-container{ padding-bottom:.2rem; }
-  .nav-links{ padding-top:0; }
-  .logo{ height:38px; width:38px; }
-
-  /* Mobile: availability/contact remain full width with comfy padding */
-  .availability, #contact .contact-form{ padding:1rem; border-radius:14px; }
-}
+/* tiny tweaks */
+.nav-welcome{ font-size:.9rem; color:var(--muted); white-space:nowrap; }
