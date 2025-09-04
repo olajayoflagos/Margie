@@ -108,38 +108,43 @@ export default function App() {
           <img src={logo} alt="margies logo" className="logo" />
         </div>
         <nav>
-          <ul className="nav-links">
-          {/* START: mobile nav toggle */}
-<input id="nav-toggle" type="checkbox" className="nav-toggle" aria-label="Toggle navigation" />
-<label htmlFor="nav-toggle" className="hamburger" aria-hidden="true"><span></span></label>
-{/* END: mobile nav toggle */}
-          
-            <li><Link to="/">Home</Link></li>
-            <li><a href="#check">Book Now</a></li>
-            <li><a href="#about">About</a></li>
-            <li><a href="#contact">Contact</a></li>
-            <li><Link to="/gallery" className={location.pathname === "/gallery" ? "active" : ""}>Gallery</Link></li>
-            <li>
-              <button onClick={toggleTheme} className="theme-toggle-button" aria-label={`Switch to ${theme === "light" ? "dark" : "light"} mode`}>
-                {theme === "light" ? <FaMoon /> : <FaSun />}
-              </button>
-            </li>
+  {/* START: mobile nav toggle */}
+  <input id="nav-toggle" type="checkbox" className="nav-toggle" aria-label="Toggle navigation" />
+  <label htmlFor="nav-toggle" className="hamburger" aria-hidden="true">
+    <span></span>
+  </label>
+  {/* END: mobile nav toggle */}
 
-            {!currentUser ? (
-              <>
+  <ul className="nav-links">
+    <li><Link to="/">Home</Link></li>
+    <li><a href="#check">Book Now</a></li>
+    <li><a href="#about">About</a></li>
+    <li><a href="#contact">Contact</a></li>
+    <li><Link to="/gallery" className={location.pathname === "/gallery" ? "active" : ""}>Gallery</Link></li>
+    <li>
+      <button
+        onClick={toggleTheme}
+        className="theme-toggle-button"
+        aria-label={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
+      >
+        {theme === "light" ? <FaMoon /> : <FaSun />}
+      </button>
+    </li>
 
-<li><Link to="/login" className="btn-yellow">Log In</Link></li>
-<li><Link to="/signup" className="btn-grey">Sign Up</Link></li>
-              </>
-            ) : (
-              <>
-                <li><Link to="/my-bookings">My Bookings</Link></li>
-                <li><button onClick={handleLogout} className="admin-button-link">Logout</button></li>
-                <li className="nav-welcome">Hello, {currentUser.email}</li>
-              </>
-            )}
-          </ul>
-        </nav>
+    {!currentUser ? (
+      <>
+        <li><Link to="/login" className="btn-yellow">Log In</Link></li>
+        <li><Link to="/signup" className="btn-grey">Sign Up</Link></li>
+      </>
+    ) : (
+      <>
+        <li><Link to="/my-bookings">My Bookings</Link></li>
+        <li><button onClick={handleLogout} className="admin-button-link">Logout</button></li>
+        <li className="nav-welcome">Hello, {currentUser.email}</li>
+      </>
+    )}
+  </ul>
+</nav>
       </header>
 
       <Routes>
