@@ -24,31 +24,31 @@ export default function LandingPage() {
       name: "The Apartment",
       img: heroImg,
       perks: ["2 Bedrooms", "City View", "Kitchenette"],
-      price: "₦15,000 / night",
+      price: "₦127,500 / night",
     },
     {
       name: "Room Diamond",
       img: roomDiamond,
       perks: ["Queen Bed", "Smart TV", "Workspace"],
-      price: "₦12,000 / night",
+      price: "₦59,500 / night",
     },
     {
       name: "Room Emerald",
       img: roomEmerald,
       perks: ["Cozy Bed", "AC", "Fast Wi-Fi"],
-      price: "₦10,000 / night",
+      price: "₦59,500 / night",
     },
     {
       name: "Room Onyx",
       img: roomOnyx,
       perks: ["Warm Lighting", "Wardrobe", "Ensuite"],
-      price: "₦9,000 / night",
+      price: "₦34,000 / night",
     },
     {
       name: "Room Bronzite",
       img: roomBronzite,
       perks: ["Budget-friendly", "Clean", "Comfortable"],
-      price: "₦8,000 / night",
+      price: "₦59,500 / night",
     },
   ];
 
@@ -273,7 +273,7 @@ export default function LandingPage() {
             loading="lazy"
             allowFullScreen
             referrerPolicy="no-referrer-when-downgrade"
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d7926.616... (replace with your full embed URL)"
+            src="https://maps.app.goo.gl/Qb78GZHA61tEyM7XA?g_st=com.google.maps.preview.copy"
           />
         </div>
         <div className="center">
