@@ -108,11 +108,12 @@ export default function App() {
           <img src={logo} alt="margies logo" className="logo" />
         </div>
         <nav>
+          <ul className="nav-links">
           {/* START: mobile nav toggle */}
 <input id="nav-toggle" type="checkbox" className="nav-toggle" aria-label="Toggle navigation" />
 <label htmlFor="nav-toggle" className="hamburger" aria-hidden="true"><span></span></label>
 {/* END: mobile nav toggle */}
-          <ul className="nav-links">
+          
             <li><Link to="/">Home</Link></li>
             <li><a href="#check">Book Now</a></li>
             <li><a href="#about">About</a></li>
