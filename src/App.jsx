@@ -122,8 +122,9 @@ export default function App() {
 
             {!currentUser ? (
               <>
-                <li><Link to="/login">Log In</Link></li>
-                <li><Link to="/signup">Sign Up</Link></li>
+
+<li><Link to="/login" className="btn-yellow">Log In</Link></li>
+<li><Link to="/signup" className="btn-grey">Sign Up</Link></li>
               </>
             ) : (
               <>
