@@ -1,6 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import App from "./App";
+import LandingPage from "./LandingPage";
 import { BrowserRouter } from "react-router-dom";
 import 'normalize.css';
 import emailjs from "emailjs-com";
@@ -12,7 +12,7 @@ const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
     <BrowserRouter>
-      <App />
+      <LandingPage />
     </BrowserRouter>
   </React.StrictMode>
 );
