@@ -110,11 +110,10 @@ export default function App() {
         <nav>
           <ul className="nav-links">
             <li><Link to="/">Home</Link></li>
-            <li><a href="#check">Book Now</a></li>
+
             <li><a href="#about">About</a></li>
             <li><a href="#contact">Contact</a></li>
-            <li><Link to="/gallery" className={location.pathname === "/gallery" ? "active" : ""}>Gallery</Link></li>
-            <li>
+
               <button onClick={toggleTheme} className="theme-toggle-button" aria-label={`Switch to ${theme === "light" ? "dark" : "light"} mode`}>
                 {theme === "light" ? <FaMoon /> : <FaSun />}
               </button>
