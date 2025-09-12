@@ -1,88 +1,73 @@
 // src/Header.jsx
-import React, { useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { FaSun, FaMoon } from "react-icons/fa";
-import "./Header.css"; // optional: create/extend to style header specific things
+import React, { useState, useEffect } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { FaMoon, FaSun } from "react-icons/fa";
+import "./Header.css";
+import logo from "./assets/margies logo.jpg"; // adjust path if needed
 
 export default function Header({ currentUser, onLogout, theme, toggleTheme }) {
   const [open, setOpen] = useState(false);
   const location = useLocation();
-  const navigate = useNavigate();
 
-  const goHome = () => {
+  // close mobile menu on route change
+  useEffect(() => {
     setOpen(false);
-    navigate("/");
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
-  const navLink = (to, label, extraClass = "") => (
-    <Link
-      to={to}
-      className={`${location.pathname === to ? "active" : ""} ${extraClass}`}
-      onClick={() => setOpen(false)}
-    >
-      {label}
-    </Link>
-  );
+  }, [location.pathname]);
 
   return (
-    <header className="header header--site">
-      <div className="brand-container" onClick={goHome} role="button" tabIndex={0}>
-        <img src="/assets/margies logo.jpg" alt="Margie's" className="logo" />
-        <span className="brand-title">Margie's</span>
-      </div>
+    <header className="site-header" role="banner">
+      <div className="site-header__inner">
+        <Link to="/" className="brand" aria-label="Margie's home">
+          <img src={logo} alt="Margie's logo" className="brand__logo" />
+          <span className="brand__text">Margie's</span>
+        </Link>
 
-      <button
-        className={`hamburger ${open ? "is-open" : ""}`}
-        aria-label="Toggle navigation"
-        onClick={() => setOpen((v) => !v)}
-      >
-        <span />
-        <span />
-        <span />
-      </button>
+        <button
+          className={`hamburger ${open ? "is-open" : ""}`}
+          aria-expanded={open}
+          aria-label={open ? "Close menu" : "Open menu"}
+          onClick={() => setOpen((v) => !v)}
+        >
+          <span />
+          <span />
+          <span />
+        </button>
 
-      <nav className={`nav-links ${open ? "is-open" : ""}`}>
-        <div className="nav-left">
-          <a href="#about" onClick={() => setOpen(false)}>About</a>
-          <a href="#rooms" onClick={() => setOpen(false)}>Rooms</a>
-          <a href="#amenities" onClick={() => setOpen(false)}>Amenities</a>
-          <Link to="/gallery" onClick={() => setOpen(false)}>Gallery</Link>
-          <Link to="/check" onClick={() => setOpen(false)}>Book Now</Link>
-        </div>
-
-        <div className="nav-right">
-          <button
-            className="theme-toggle-button"
-            onClick={() => {
-              toggleTheme();
-              setOpen(false);
-            }}
-            aria-label="Toggle theme"
-          >
-            {theme === "light" ? <FaMoon /> : <FaSun />}
-          </button>
-
-          {!currentUser ? (
-            <>
-              <Link to="/login" className="btn btn--yellow" onClick={() => setOpen(false)}>
-                Log In
-              </Link>
-              <Link to="/signup" className="btn btn--grey" onClick={() => setOpen(false)}>
-                Sign Up
-              </Link>
-            </>
-          ) : (
-            <>
-              <Link to="/my-bookings" onClick={() => setOpen(false)}>My Bookings</Link>
-              <button className="btn btn--logout" onClick={() => { setOpen(false); onLogout(); }}>
-                Logout
+        <nav className={`site-nav ${open ? "is-open" : ""}`} role="navigation" aria-label="Main navigation">
+          <ul>
+            <li><Link to="/">Home</Link></li>
+            <li><a href="#check">Book Now</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="#contact">Contact</a></li>
+            <li><Link to="/gallery">Gallery</Link></li>
+            <li className="nav-theme">
+              <button
+                className="theme-toggle"
+                onClick={toggleTheme}
+                aria-label={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
+                title="Toggle theme"
+              >
+                {theme === "light" ? <FaMoon /> : <FaSun />}
               </button>
-              <span className="nav-welcome">Hi, {currentUser.email}</span>
-            </>
-          )}
-        </div>
-      </nav>
+            </li>
+
+            {!currentUser && (
+              <>
+                <li className="nav-cta"><Link to="/login" className="btn btn--yellow">Log In</Link></li>
+                <li className="nav-cta"><Link to="/signup" className="btn btn--grey">Sign Up</Link></li>
+              </>
+            )}
+
+            {currentUser && (
+              <>
+                <li><Link to="/my-bookings">My Bookings</Link></li>
+                <li><button onClick={onLogout} className="btn btn--outline">Logout</button></li>
+                <li className="nav-welcome">Hello, {currentUser.email?.split("@")[0]}</li>
+              </>
+            )}
+          </ul>
+        </nav>
+      </div>
     </header>
   );
 }
