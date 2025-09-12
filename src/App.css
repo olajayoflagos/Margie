@@ -1,296 +1,444 @@
-/* ============ ROOT & THEME ============ */
-:root {
---brand: #f8d24b;
---brand-dark: #e2c33f;
---text: #222;
---muted: #666;
---bg: #ffffff;
---bg-soft: #f7f7f7;
---border: #e8e8e8;
---danger: #e74c3c;
---success: #2ecc71;
---info: #3498db;
+/* =========================
+   App.css — unified styles
+   ========================= */
+
+/* ---------- Root colors & basic theme ---------- */
+:root{
+  --brand: #f8d24b;
+  --brand-dark: #e2c33f;
+  --bg: #ffffff;
+  --text: #111;
+  --muted: #666;
+  --soft: #f6f6f6;
+  --border: #e6e6e6;
+  --shadow: 0 10px 30px rgba(8,10,15,0.08);
+  --card-shadow: 0 8px 24px rgba(3,6,18,0.12);
+  --max-width: 1200px;
+  --gap: 1rem;
 }
 
-.light-mode { background: var(--bg); color: var(--text); }
-.dark-mode  { background: #0e0f14; color: #e9e9e9; }
-
-.dark-mode .section { background: #12131a; }
-.dark-mode .header { background: rgba(0,0,0,0.6); backdrop-filter: blur(6px); }
-.dark-mode .data-table { background: #171923; color: #e9e9e9; }
-.dark-mode .data-table th { border-color: #22263a; }
-.dark-mode .data-table td { border-color: #22263a; }
-
-/* ============ LAYOUT ============ */
-.App { min-height: 100vh; display: flex; flex-direction: column; }
-
-.section {
-padding: 3rem 1rem;
-max-width: 1200px;
-margin: 0 auto;
+/* Dark theme variables */
+.dark-mode {
+  --bg: #0e0f14;
+  --text: #e9e9e9;
+  --muted: #bfc2c8;
+  --soft: #121318;
+  --border: rgba(255,255,255,0.04);
+  --shadow: 0 10px 30px rgba(0,0,0,0.6);
+  --card-shadow: 0 8px 24px rgba(0,0,0,0.55);
 }
 
-.no-padding-top { padding-top: 0; }
-
-/* ============ HEADER / NAV ============ */
-.header {
-position: sticky;
-top: 0;
-z-index: 50;
-background: rgba(255,255,255,0.9);
-backdrop-filter: blur(6px);
-border-bottom: 1px solid var(--border);
+/* ---------- Global layout ---------- */
+*{box-sizing:border-box}
+html,body,#root{height:100%}
+body{
+  margin:0;
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  background:var(--bg);
+  color:var(--text);
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  line-height:1.45;
 }
 
-.brand-container {
-display: flex;
-align-items: center;
-justify-content: space-between;
-padding: 0.5rem 1rem;
+/* container helper */
+.container{
+  width:calc(100% - 32px);
+  max-width:var(--max-width);
+  margin:0 auto;
+  padding:0 16px;
 }
 
-.logo-container { display: flex; align-items: center; gap: 0.5rem; cursor: pointer; }
-.logo { height: 42px; width: 42px; border-radius: 50%; object-fit: cover; }
-
-.nav-links {
-display: flex;
-align-items: center;
-flex-wrap: wrap;
-gap: 0.5rem;
-padding: 0.5rem 1rem 1rem;
-list-style: none;
-margin: 0;
+/* sections */
+.section{
+  padding:48px 0;
+}
+.section h2{
+  margin:0 0 18px 0;
+  font-size:1.75rem;
+  letter-spacing:0.2px;
 }
 
+/* ---------- Header / single consistent nav ---------- */
+
+/* Styles for the header used in App.jsx */
+.header{
+  position:sticky;
+  top:0;
+  z-index:120;
+  background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(255,255,255,0.92));
+  backdrop-filter: blur(6px);
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 2px 8px rgba(8,10,15,0.02);
+}
+.dark-mode .header{
+  background: linear-gradient(180deg, rgba(6,8,12,0.9), rgba(6,8,12,0.85));
+  border-bottom-color: var(--border);
+}
+
+/* Brand container (App.jsx) */
+.brand-container{
+  max-width:var(--max-width);
+  margin:0 auto;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:12px 16px;
+}
+.logo{
+  height:44px;
+  width:44px;
+  object-fit:cover;
+  border-radius:8px;
+  cursor:pointer;
+}
+
+/* Nav links (App.jsx) */
+.nav-links{
+  display:flex;
+  align-items:center;
+  gap:0.5rem;
+  list-style:none;
+  margin:0;
+  padding:0 16px;
+  flex-wrap:wrap;
+}
+.nav-links li{ display:inline-block; }
 .nav-links a, .nav-links button {
-color: inherit;
-text-decoration: none;
-font-weight: 500;
-padding: 0.4rem 0.8rem;
-border-radius: 6px;
-border: 1px solid transparent;
-background: transparent;
-cursor: pointer;
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:8px 12px;
+  color:var(--text);
+  text-decoration:none;
+  border-radius:8px;
+  border:1px solid transparent;
+  font-weight:500;
+  background:transparent;
+  cursor:pointer;
+}
+.nav-links a:hover, .nav-links button:hover{ background:var(--soft); }
+
+/* Welcome label */
+.nav-welcome{ font-size:0.9rem; color:var(--muted); padding:6px 10px; }
+
+/* Theme toggle button small */
+.theme-toggle-button{
+  border:1px solid var(--border);
+  background:transparent;
+  padding:6px;
+  border-radius:8px;
+  display:inline-grid;
+  place-items:center;
 }
 
-.nav-links a.active,
-.nav-links a:hover {
-background: var(--bg-soft);
-border-color: var(--border);
+/* Admin / logout button styling fallback */
+.admin-button-link{
+  background:var(--brand);
+  color:#000;
+  border:none;
+  padding:8px 12px;
+  border-radius:999px;
+  font-weight:700;
+}
+.admin-button-link:hover{ background:var(--brand-dark); }
+
+/* ---------- LandingPage nav (landing uses .nav and .hamburger) ---------- */
+.nav{
+  width:100%;
+  background:transparent;
+  position:relative;
+  z-index:60;
+}
+.nav__inner{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:16px;
+  max-width:var(--max-width);
+  margin:0 auto;
 }
 
-.theme-toggle-button {
-border: 1px solid var(--border);
-background: var(--bg);
+/* brand inside landing */
+.brand img{ height:44px; width:44px; object-fit:cover; border-radius:8px; }
+.brand span{ margin-left:8px; font-weight:700; font-size:1.05rem; color:var(--text); }
+
+/* nav links for LandingPage */
+.nav__links{
+  display:flex;
+  gap:12px;
+  align-items:center;
+}
+.nav__links a, .nav__links .btn{
+  text-decoration:none;
+  color:var(--text);
+  padding:8px 12px;
+  border-radius:8px;
+  font-weight:600;
+}
+.btn--sm{ padding:8px 12px; border-radius:8px; border:1px solid var(--border); }
+
+/* hamburger (landing) */
+.hamburger{
+  display:none;
+  width:44px;
+  height:40px;
+  background:transparent;
+  border:none;
+  flex-direction:column;
+  justify-content:space-around;
+  align-items:center;
+  padding:6px;
+  gap:6px;
+  cursor:pointer;
+  border-radius:8px;
+}
+.hamburger span{
+  display:block;
+  width:22px;
+  height:2px;
+  background:var(--text);
+  border-radius:2px;
+  transition:transform .18s, opacity .18s;
+}
+.hamburger.is-open span:nth-child(1){ transform:translateY(7px) rotate(45deg); }
+.hamburger.is-open span:nth-child(2){ opacity:0; }
+.hamburger.is-open span:nth-child(3){ transform:translateY(-7px) rotate(-45deg); }
+
+/* landing nav open state for small screens */
+.nav__links.is-open{
+  position:absolute;
+  top:64px;
+  right:16px;
+  left:16px;
+  background:var(--bg);
+  border-radius:10px;
+  padding:12px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  box-shadow:var(--card-shadow);
 }
 
-.admin-button-link {
-background: var(--brand);
-border: none;
-color: #000;
-font-weight: 600;
+/* ---------- Hero (landing) ---------- */
+.hero{
+  position:relative;
+  display:block;
+  min-height:60vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
 }
-.admin-button-link:hover { background: var(--brand-dark); }
+.hero__bg{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  filter:brightness(.45);
+  z-index:0;
+}
+.hero__overlay{ position:absolute; inset:0; background:linear-gradient(180deg, rgba(0,0,0,0.25), rgba(0,0,0,0.35)); z-index:1; }
+.hero__content{ position:relative; z-index:2; padding:80px 16px; color:#fff; max-width:1000px; text-align:left; }
+.hero .eyebrow{ color:rgba(255,255,255,0.9); font-weight:700; letter-spacing:2px; font-size:0.9rem; margin-bottom:10px; text-transform:uppercase; }
+.hero h1{ font-size:2.2rem; margin:0 0 12px; color:rgba(255,255,255,0.95); }
+.hero .sub{ color:rgba(255,255,255,0.9); max-width:680px; margin-bottom:18px; }
 
-/* ============ HERO / CAROUSEL ============ */
-.carouselmedia {
-width: 100%;
-max-height: 72vh;
-object-fit: cover;
+/* hero actions */
+.hero__actions { display:flex; gap:12px; flex-wrap:wrap; }
+.btn{ display:inline-block; text-decoration:none; text-align:center; padding:12px 20px; border-radius:10px; }
+.btn--primary{ background:#1f78ff; color:#fff; font-weight:700; box-shadow:0 6px 18px rgba(31,120,255,0.14); }
+.btn--ghost{ background:transparent; color:#fff; border:1px solid rgba(255,255,255,0.12); font-weight:700; }
+
+/* ---------- Trust / Cards / Rooms ---------- */
+.trust{ display:flex; gap:12px; justify-content:space-between; padding:18px 0; color:var(--muted); }
+.trust > div{ background:var(--soft); padding:14px 18px; border-radius:8px; flex:1; text-align:center; box-shadow: var(--shadow); }
+
+/* rooms grid */
+.rooms__grid{ display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:18px; margin-top:18px; }
+.room-card{ background:var(--bg); border-radius:10px; overflow:hidden; border:1px solid var(--border); box-shadow:var(--card-shadow); display:flex; flex-direction:column; }
+.room-card__image img{ width:100%; height:180px; object-fit:cover; display:block; }
+.room-card__body { padding:12px; display:flex; flex-direction:column; gap:8px; flex:1; }
+.room-card__perks { list-style:none; padding:0; margin:0; display:flex; gap:8px; flex-wrap:wrap; }
+.room-card__perks li{ background:var(--soft); padding:6px 8px; border-radius:6px; font-size:0.9rem; color:var(--muted); }
+
+/* ---------- Gallery / testimonials etc ---------- */
+.gallery__grid{ display:grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap:12px; margin-top:12px; }
+.gallery__item img{ width:100%; height:140px; object-fit:cover; border-radius:8px; }
+
+/* testimonials grid */
+.testimonials__grid{ display:grid; grid-template-columns: repeat(auto-fit,minmax(220px,1fr)); gap:18px; }
+
+/* ---------- Location iframe ---------- */
+.map-wrap iframe{ width:100%; height:320px; border:0; border-radius:10px; }
+
+/* ---------- CTA bottom ---------- */
+.cta{ background:linear-gradient(180deg, rgba(0,0,0,0.03), transparent); padding:36px 0; }
+.cta__inner{ display:flex; gap:20px; align-items:center; justify-content:space-between; flex-wrap:wrap; }
+
+/* ---------- Contact form & booking-lock (shadow boxes filling desktop) ---------- */
+
+/* Shared card style used for booking-lock and contact container */
+.card-panel{
+  background:var(--bg);
+  border-radius:12px;
+  padding:28px;
+  border:1px solid var(--border);
+  box-shadow:var(--card-shadow);
 }
 
-/* ============ CONTACT FORM ============ */
-.contact-form {
-display: grid;
-gap: 0.8rem;
-max-width: 520px;
+/* Check availability shadow box - on desktop center and take large width */
+#check .card-panel, .booking-lock{
+  max-width:1000px;
+  margin:0 auto;
+  width:100%;
+  padding:30px;
 }
 
+/* Contact form - put into a centered card on desktop */
+.contact-form{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  max-width:520px;
+  width:100%;
+  margin:0 auto;
+}
 .contact-form input,
-.contact-form textarea {
-padding: 0.8rem 0.9rem;
-border: 1px solid var(--border);
-border-radius: 8px;
-background: var(--bg);
-color: inherit;
+.contact-form textarea{
+  width:100%;
+  padding:14px 12px;
+  border-radius:10px;
+  border:1px solid var(--border);
+  background:var(--bg);
+  color:var(--text);
+}
+.contact-form button{
+  background:var(--brand);
+  color:#000;
+  padding:12px 18px;
+  border-radius:10px;
+  border:none;
+  font-weight:700;
+  cursor:pointer;
+}
+.contact-form .card-panel {
+  max-width:720px;
+  margin:0 auto;
 }
 
-.contact-form button {
-background: var(--brand);
-color: #000;
-font-weight: 600;
-border: none;
-padding: 0.9rem 1rem;
-border-radius: 8px;
-cursor: pointer;
+/* booking-lock style */
+.booking-lock{
+  border-radius:12px;
+  background:var(--bg);
+  border:1px dashed var(--border);
+  padding:20px;
+  text-align:center;
 }
-.contact-form button:hover { background: var(--brand-dark); }
 
-.contact-status { margin-top: 0.5rem; font-weight: 500; }
-.contact-status.info { color: var(--info); }
-.contact-status.success { color: var(--success); }
-.contact-status.error { color: var(--danger); }
+/* ---------- Footer ---------- */
+.footer{
+  margin-top:48px;
+  border-top:1px solid var(--border);
+  padding:28px 0;
+  color:var(--muted);
+}
+.footer__grid{
+  display:grid;
+  grid-template-columns: 1fr 160px 160px;
+  gap:18px;
+  align-items:start;
+  max-width:var(--max-width);
+  margin:0 auto;
+  padding:0 16px;
+}
+.footer img{ height:44px; border-radius:8px; }
 
-/* ============ FLOATING ACTIONS ============ */
+/* ---------- Buttons: Login / Signup styles ---------- */
+.btn-yellow, .btn--yellow {
+  background:var(--brand);
+  color:#000;
+  font-weight:800;
+  padding:8px 14px;
+  border-radius:999px;
+  border:none;
+}
+.btn-grey, .btn--grey {
+  background:#f3f3f3;
+  color:var(--text);
+  padding:8px 14px;
+  border-radius:999px;
+  border:1px solid var(--border);
+}
+
+/* ---------- Scroll to top & floating actions ---------- */
 .map-float, .whatsapp-float {
-position: fixed;
-right: 16px;
-width: 48px;
-height: 48px;
-border-radius: 50%;
-display: grid;
-place-items: center;
-color: #fff;
-z-index: 60;
-box-shadow: 0 6px 18px rgba(0,0,0,0.2);
+  position:fixed;
+  right:16px;
+  width:48px;
+  height:48px;
+  border-radius:50%;
+  display:grid;
+  place-items:center;
+  color:#fff;
+  z-index:80;
+  box-shadow:var(--card-shadow);
+}
+.map-float{ bottom:120px; background:#e74c3c; }
+.whatsapp-float{ bottom:56px; background:#25d366; }
+.scroll-top-button{
+  position:fixed; right:16px; bottom:188px; width:46px; height:46px; border-radius:50%; background:#000; color:#fff; z-index:80;
 }
 
-.map-float { bottom: 96px; background: #e74c3c; }
-.whatsapp-float { bottom: 36px; background: #25d366; }
+/* ---------- Utility ---------- */
+.center{ text-align:center; }
+.section-head p{ color:var(--muted); margin-top:6px; }
 
-.map-icon, .whatsapp-icon { font-size: 1.2rem; }
-
-/* ============ SCROLL TO TOP ============ */
-.scroll-top-button {
-position: fixed;
-bottom: 160px;
-right: 16px;
-width: 46px;
-height: 46px;
-border-radius: 50%;
-border: none;
-background: #000;
-color: #fff;
-cursor: pointer;
-z-index: 55;
-box-shadow: 0 5px 16px rgba(0,0,0,0.2);
+/* ---------- Responsive rules ---------- */
+@media (max-width: 980px){
+  .hero h1{ font-size:1.6rem; }
+  .hero__content{ padding:56px 12px; }
+  .trust{ flex-direction:column; gap:10px; }
+  .footer__grid{ grid-template-columns: 1fr; text-align:left; }
+  .cta__inner{ flex-direction:column; align-items:flex-start; gap:8px; }
+  .rooms__grid{ grid-template-columns: repeat(2, 1fr); }
 }
 
-/* ============ AUTH FORMS (Login / Signup / Reset) ============ */
-.auth-form {
-max-width: 420px;
-margin: 2rem auto;
-padding: 1.5rem;
-border: 1px solid var(--border);
-border-radius: 12px;
-background: var(--bg);
+/* On small screens: switch nav to hamburger for App header and Landing nav */
+@media (max-width: 800px){
+  /* App header */
+  .brand-container{ padding:10px 12px; }
+  .nav-links{ display:none; } /* hide inline links */
+  /* Show small hamburger in App header — reuse landing hamburger */
+  .brand-container:after{
+    content: "";
+  }
+
+  /* Landing hamburger display */
+  .hamburger{ display:flex; }
+  .nav__links { display:none; }
+  .nav__links.is-open{ display:flex; }
+
+  /* Make hero compact */
+  .hero{ min-height:48vh; }
+  .hero__content{ text-align:center; padding:40px 12px; }
+  .hero h1{ font-size:1.6rem; }
+
+  /* Contact and booking cards take full width but with padding */
+  .contact-form, .booking-lock, .card-panel{ padding:18px; box-shadow:var(--card-shadow); border-radius:12px; }
+
+  .rooms__grid{ grid-template-columns: 1fr; }
 }
 
-.auth-form h2 { margin-bottom: 0.5rem; }
-
-.auth-form input {
-width: 100%;
-padding: 0.85rem 0.9rem;
-border: 1px solid var(--border);
-border-radius: 8px;
-background: var(--bg);
-color: inherit;
-margin: 0.5rem 0;
+/* Final small tweak: ensure check card and contact card full width on large displays */
+@media (min-width: 1000px){
+  #check .card-panel, .contact-form .card-panel{
+    width:90%;
+    max-width:1000px;
+    margin-left:auto;
+    margin-right:auto;
+  }
 }
-
-.auth-form button {
-width: 100%;
-padding: 0.9rem 1rem;
-border: none;
-border-radius: 8px;
-background: var(--brand);
-color: #000;
-font-weight: 600;
-cursor: pointer;
-margin-top: 0.5rem;
-}
-.auth-form button:hover { background: var(--brand-dark); }
-
-.auth-form .error {
-color: var(--danger);
-font-weight: 500;
-}
-
-/* ============ MY BOOKINGS ============ */
-.my-bookings {
-max-width: 900px;
-margin: 2rem auto;
-}
-
-.my-bookings ul {
-list-style: none;
-padding: 0;
-display: grid;
-gap: 1rem;
-}
-
-.my-bookings li {
-border: 1px solid var(--border);
-border-radius: 10px;
-padding: 1rem;
-background: var(--bg);
-}
-
-.my-bookings button {
-margin-top: 0.75rem;
-padding: 0.6rem 0.9rem;
-border-radius: 6px;
-border: 1px solid var(--border);
-background: #fff;
-cursor: pointer;
-}
-.my-bookings button:hover { background: var(--bg-soft); }
-
-/* ============ TABLES (Admin) ============ */
-.data-table {
-width: 100%;
-border-collapse: collapse;
-background: #fff;
-border: 1px solid var(--border);
-border-radius: 10px;
-overflow: hidden;
-}
-
-.data-table th, .data-table td {
-border-bottom: 1px solid var(--border);
-padding: 0.75rem;
-text-align: left;
-}
-
-.status-badge {
-padding: 0.25rem 0.55rem;
-border-radius: 999px;
-font-size: 0.85rem;
-background: var(--bg-soft);
-border: 1px solid var(--border);
-}
-
-/* ============ FOOTER ============ */
-.footer {
-margin-top: auto;
-border-top: 1px solid var(--border);
-padding: 1rem;
-text-align: center;
-background: var(--bg);
-}
-
-.footer a {
-color: #0077cc;
-margin: 0 0.35rem;
-}
-
-/* ============ UTIL ============ */
-.booking-lock {
-border: 1px dashed var(--border);
-padding: 1rem;
-border-radius: 10px;
-background: var(--bg-soft);
-}
-
-.nav-welcome {
-font-size: 0.9rem;
-color: var(--muted);
-}
-
-/* ============ RESPONSIVE TWEAKS ============ */
-@media (max-width: 768px) {
-.brand-container { padding-bottom: 0.25rem; }
-.nav-links { padding-top: 0; }
-.logo { height: 38px; width: 38px; }
-}
-
