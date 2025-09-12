@@ -1,6 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import LandingPage from "./LandingPage";
+import App from "./App";
 import { BrowserRouter } from "react-router-dom";
 import 'normalize.css';
 import emailjs from "emailjs-com";
