@@ -57,33 +57,7 @@ export default function LandingPage() {
   return (
     <div className="margies">
       {/* ====== NAVBAR ====== */}
-      <header className="nav">
-        <div className="nav__inner container">
-          <Link to="/" className="brand">
-            <img src={logo} alt="Margie's logo" />
-            <span>Margie’s</span>
-          </Link>
-
-          <nav className={`nav__links ${mobileOpen ? "is-open" : ""}`}>
-            <a href="#about">About</a>
-            <a href="#rooms">Rooms</a>
-            <a href="#amenities">Amenities</a>
-            <a href="#location">Location</a>
-            <Link to="/gallery">Gallery</Link>
-            <Link to="/check" className="btn btn--sm">Book Now</Link>
-          </nav>
-
-          <button
-            className={`hamburger ${mobileOpen ? "is-open" : ""}`}
-            aria-label="Toggle navigation"
-            onClick={() => setMobileOpen((v) => !v)}
-          >
-            <span />
-            <span />
-            <span />
-          </button>
-        </div>
-      </header>
+      
 
       {/* ====== HERO ====== */}
       <section className="hero">
