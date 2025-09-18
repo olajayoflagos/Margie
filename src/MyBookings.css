@@ -1,82 +1,67 @@
-.my-bookings {
-  max-width: 600px;
-  margin: 2rem auto;
-  padding: 1rem;
-  background: #fafafa;
-  border-radius: 8px;
-  font-family: 'Segoe UI', sans-serif;
+/* MyBookings.css - list of bookings presented in cards */
+
+:root{
+  --bg: #f6f8fb;
+  --card: #fff;
+  --accent: #0b63d6;
+  --muted: #6b7280;
+  --shadow: 0 8px 22px rgba(15,23,42,0.06);
+  --radius: 12px;
 }
 
-.my-bookings h2 {
-  text-align: center;
-  margin-bottom: 1rem;
-  font-size: 1.5rem;
-  color: #333;
+.my-bookings{
+  max-width: 840px;
+  margin: 18px auto;
+  padding: 12px;
 }
 
-.my-bookings ul {
+.my-bookings h2{ margin: 0 0 12px; color: #0f172a; }
+
+.my-bookings ul{
   list-style: none;
   padding: 0;
   margin: 0;
+  display: grid;
+  gap: 12px;
 }
 
-.my-bookings li {
-  background: #fff;
-  padding: 1rem;
-  margin-bottom: 1rem;
-  border-radius: 6px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-  position: relative;
+/* each booking shown as a card */
+.my-bookings li{
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 14px;
+  box-shadow: var(--shadow);
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
 }
 
-.my-bookings li strong {
-  font-size: 1.1rem;
-  display: block;
-  margin-bottom: 0.5rem;
-  color: #222;
+.my-bookings li strong{ font-size: 1rem; display:block; color: #0f172a; }
+
+.my-bookings li p, .my-bookings li span {
+  color: var(--muted);
+  font-size: 0.95rem;
 }
 
-.my-bookings li p,
-.my-bookings li br {
-  line-height: 1.4;
-  margin: 0.25rem 0;
-  color: #555;
-}
-
-.my-bookings li button {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  background: #d93025;
-  color: #fff;
-  border: none;
-  padding: 0.4rem 0.8rem;
-  border-radius: 4px;
+/* controls */
+.my-bookings button{
+  background: transparent;
+  border: 1px solid rgba(11,99,214,0.12);
+  color: var(--accent);
+  padding: 8px 10px;
+  border-radius: 10px;
   cursor: pointer;
-  font-size: 0.85rem;
-  transition: background 0.2s;
+  font-weight: 700;
 }
+.my-bookings button:active{ transform: translateY(1px); }
 
-.my-bookings li button:hover {
-  background: #b2221a;
-}
-
-@media (min-width: 600px) {
-  .auth-form {
-    padding: 2rem;
+/* small screens: stack content */
+@media (max-width:640px){
+  .my-bookings li{
+    flex-direction: column;
+    align-items: flex-start;
   }
-  .my-bookings {
-    padding: 2rem;
-  }
-}
-
-@media (max-width: 360px) {
-  .auth-form {
-    margin: 1rem;
-    padding: 1rem;
-  }
-  .my-bookings {
-    margin: 1rem;
-    padding: 1rem;
-  }
+  .my-bookings button{ align-self: stretch; width: 100%; }
 }
