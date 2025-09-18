@@ -1,4 +1,3 @@
-// MyBookings.jsx
 import { useEffect, useState } from "react";
 import { fetchUserBookings, cancelBooking } from "./bookingService";
 import "./MyBookings.css";
@@ -24,19 +23,22 @@ export default function MyBookings() {
         {bookings.map(b => (
           <li key={b.id}>
             <strong>{b.roomName}</strong><br/>
-            {b.dates[0]} → {b.dates[b.dates.length-1]}<br/>
+            {b.dates && b.dates[0]} → {b.dates && b.dates[b.dates.length-1]}<br/>
             Nights: {b.nights} • ₦{b.amountPaid}<br/>
             Status: {b.status}
             {b.status !== "cancelled" && (
-<button onClick={async () => {
-  await cancelBooking(b.id);
-  setBookings(bookings.map(x => 
-    x.id === b.id ? { ...x, status: "cancelled" } : x
-  ));
-}}>
-  Cancel
-</button>
-
+              <button onClick={async () => {
+                try {
+                  await cancelBooking(b.id);
+                  setBookings(bookings.map(x =>
+                    x.id === b.id ? { ...x, status: "cancelled" } : x
+                  ));
+                } catch (err) {
+                  console.error(err);
+                }
+              }}>
+                Cancel
+              </button>
             )}
           </li>
         ))}
