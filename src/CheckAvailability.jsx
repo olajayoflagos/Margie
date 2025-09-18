@@ -3,16 +3,14 @@ import { useNavigate } from "react-router-dom";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { differenceInDays } from "date-fns";
-import { collection, getDocs } from "firebase/firestore";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { db } from "./firebase";
+import { collection, getDocs, addDoc, serverTimestamp } from "firebase/firestore";
+import { onAuthStateChanged } from "firebase/auth";
+import { db, auth } from "./firebase";
 import { checkRoomAvailability } from "./bookingService";
 import "./CheckAvailability.css";
 
 export default function CheckAvailability() {
-  const auth = getAuth();
   const navigate = useNavigate();
-
 
   // Form state
   const [rooms, setRooms] = useState([]);
@@ -30,7 +28,8 @@ export default function CheckAvailability() {
 
   // Load auth state
   useEffect(() => {
-    onAuthStateChanged(auth, u => setUser(u));
+    const unsub = onAuthStateChanged(auth, u => setUser(u));
+    return () => unsub();
   }, []);
 
   // Load available rooms once
@@ -44,7 +43,8 @@ export default function CheckAvailability() {
             .map(d => ({ id: d.id, ...d.data() }))
             .filter(r => r.available)
         );
-      } catch {
+      } catch (err) {
+        console.error(err);
         setMsg({ type: "error", text: "Failed to load rooms." });
       } finally {
         setLoading(false);
@@ -81,52 +81,52 @@ export default function CheckAvailability() {
       }
 
       // Compute amount
-      const amountPaid =
-        selectedRoom.price * nights;
+      const amountPaid = selectedRoom.price * nights;
 
       // Launch Paystack
-if (
-  window.PaystackPop &&
-  typeof window.PaystackPop.setup === "function"
-) {
-  const paystack = window.PaystackPop.setup({
-    key: 'pk_live_cb4309974c3aa9a757e93deee00f318d7b4ce241',
-    email: guestEmail,
-    amount: selectedRoom.price * nights * 100, // Paystack expects amount in kobo
-    currency: "NGN",
-    ref: "" + Math.floor(Math.random() * 1000000000 + 1),
-    callback: function (res) {
-      // Wrap async operations in an IIFE so callback remains a plain function
-      (async () => {
-        await addDoc(collection(db, "bookings"), {
-          guestName,
-          guestEmail,
-          partySize,
-          roomId: selectedRoom.id,
-          roomName: selectedRoom.name,
-          checkIn: checkIn.toISOString().slice(0,10),
-          checkOut: checkOut.toISOString().slice(0,10),
-          nights,
-          amountPaid,
-          paymentRef: res.reference,
-          status: "active",
-          createdAt: serverTimestamp(),
-          userId: user.uid,
+      if (window.PaystackPop && typeof window.PaystackPop.setup === "function") {
+        const paystack = window.PaystackPop.setup({
+          key: 'pk_live_cb4309974c3aa9a757e93deee00f318d7b4ce241',
+          email: guestEmail,
+          amount: amountPaid * 100, // Paystack expects amount in kobo
+          currency: "NGN",
+          ref: "" + Math.floor(Math.random() * 1000000000 + 1),
+          callback: function (res) {
+            (async () => {
+              try {
+                await addDoc(collection(db, "bookings"), {
+                  guestName,
+                  guestEmail,
+                  partySize,
+                  roomId: selectedRoom.id,
+                  roomName: selectedRoom.name,
+                  checkIn: checkIn.toISOString().slice(0,10),
+                  checkOut: checkOut.toISOString().slice(0,10),
+                  nights,
+                  amountPaid,
+                  paymentRef: res.reference,
+                  status: "active",
+                  createdAt: serverTimestamp(),
+                  userId: user.uid,
+                });
+                setMsg({ type: "success", text: "Booking confirmed!" });
+              } catch (err) {
+                console.error(err);
+                setMsg({ type: "error", text: "Failed to save booking after payment." });
+              }
+            })();
+          },
+          onClose: function () {
+            setMsg({ type: "error", text: "Payment cancelled." });
+          },
         });
-        setMsg({ type: "success", text: "Booking confirmed!" });
-      })();
-    },
-    onClose: function () {
-      setMsg({ type: "error", text: "Payment cancelled." });
-    },
-  });
-  paystack.openIframe();
-} else {
-  setMsg({
-    type: "error",
-    text: "Could not initialize Paystack. Try again later.",
-  });
-}
+        paystack.openIframe();
+      } else {
+        setMsg({
+          type: "error",
+          text: "Could not initialize Paystack. Try again later.",
+        });
+      }
     } catch (e) {
       console.error(e);
       setMsg({
@@ -190,14 +190,14 @@ if (
 
       <DatePicker
         selected={checkIn}
-        onChange={setCheckIn}
+        onChange={date => setCheckIn(date)}
         placeholderText="Check-in Date"
         minDate={new Date()}
         disabled={!user}
       />
       <DatePicker
         selected={checkOut}
-        onChange={setCheckOut}
+        onChange={date => setCheckOut(date)}
         placeholderText="Check-out Date"
         minDate={checkIn || new Date()}
         disabled={!user}
@@ -207,8 +207,7 @@ if (
         <p className="total-cost">
           {selectedRoom.name}: ₦{selectedRoom.price}×
           {differenceInDays(checkOut, checkIn)} = ₦
-          {selectedRoom.price *
-            differenceInDays(checkOut, checkIn)}
+          {selectedRoom.price * differenceInDays(checkOut, checkIn)}
         </p>
       )}
 
