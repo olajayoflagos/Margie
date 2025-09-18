@@ -179,3 +179,11 @@ body, .margies{ background:#0b0c0f; color:var(--text); font-family: Inter, syste
   .gallery__grid{ grid-template-columns: repeat(2,1fr); }
   .trust{ grid-template-columns: repeat(2,1fr); }
 }
+/* small description under room perks — matches page typography */
+.room-card__desc{
+  color: #cfd7e3;        /* same muted body color used elsewhere */
+  font-size: 0.95rem;    /* matches perk / body sizing */
+  line-height: 1.45;
+  margin: 6px 0 0;
+  opacity: 0.95;
+}
