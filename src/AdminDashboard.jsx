@@ -15,6 +15,7 @@ import { signOut } from "firebase/auth";
 import { auth } from "./firebase";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import { Document, Page, View, Text, StyleSheet } from "@react-pdf/renderer";
+import AdminArticles from "./AdminArticles";
 import "./AdminDashboard.css";
 
 const pdfStyles = StyleSheet.create({
@@ -50,6 +51,7 @@ export default function AdminDashboard() {
   const [search, setSearch] = useState("");
   const [lastMsgDoc, setLastMsgDoc] = useState(null);
   const [lastBkDoc, setLastBkDoc] = useState(null);
+  const [tab, setTab] = useState("bookings"); // bookings | messages | articles
 
   useEffect(() => {
     async function load() {
@@ -110,7 +112,20 @@ export default function AdminDashboard() {
     <div className="admin-dashboard">
       <header>
         <h1>Admin Dashboard</h1>
-        <input type="text" placeholder="Search..." value={search} onChange={(e) => setSearch(e.target.value)} />
+        <nav className="admin-tabs">
+          <button className={tab === "bookings" ? "active" : ""} onClick={() => setTab("bookings")}>
+            Bookings
+          </button>
+          <button className={tab === "messages" ? "active" : ""} onClick={() => setTab("messages")}>
+            Messages
+          </button>
+          <button className={tab === "articles" ? "active" : ""} onClick={() => setTab("articles")}>
+            Articles
+          </button>
+        </nav>
+        {tab !== "articles" && (
+          <input type="text" placeholder="Search..." value={search} onChange={(e) => setSearch(e.target.value)} />
+        )}
         <button
           className="admin-logout"
           onClick={async () => {
@@ -121,7 +136,9 @@ export default function AdminDashboard() {
         </button>
       </header>
 
-      <section>
+      {tab === "articles" && <AdminArticles />}
+
+      <section style={{ display: tab === "messages" ? "block" : "none" }}>
         <h2>Messages ({filteredMsgs.length})</h2>
         <table>
           <thead>
@@ -159,7 +176,7 @@ export default function AdminDashboard() {
         </button>
       </section>
 
-      <section>
+      <section style={{ display: tab === "bookings" ? "block" : "none" }}>
         <h2>Bookings ({filteredBks.length})</h2>
         <table>
           <thead>

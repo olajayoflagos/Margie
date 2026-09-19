@@ -1,14 +1,21 @@
 /* CheckAvailability.css - carded layout for availability/check & pay UI */
 
-:root{
-  --bg: #f6f7fb;
-  --card: #ffffff;
-  --muted: #6b7280;
-  --accent: #0b63d6;
-  --danger: #dc2626;
-  --success: #16a34a;
-  --shadow-1: 0 6px 18px rgba(22, 28, 37, 0.06);
-  --shadow-2: 0 10px 30px rgba(22, 28, 37, 0.08);
+/* Scoped to .availability on purpose. These used to be declared on :root,
+   which leaked them into every other stylesheet in the app (and got
+   overwritten in turn by the landing page's dark :root) - that mismatch is
+   what made the labels on this page invisible. */
+.availability{
+  --bg: transparent;
+  --card: #14171d;
+  --text: #eef2f7;
+  --label: #cfd7e3;
+  --muted: #a3adbd;
+  --border: rgba(255,255,255,0.09);
+  --accent: #2e7cf6;
+  --danger: #f87171;
+  --success: #34d399;
+  --shadow-1: 0 6px 18px rgba(0, 0, 0, 0.25);
+  --shadow-2: 0 10px 30px rgba(0, 0, 0, 0.35);
   --radius: 12px;
   --gap: 16px;
 }
@@ -22,15 +29,16 @@
 }
 
 .availability h2{
-  font-size: 1.25rem;
+  font-size: 1.35rem;
   margin: 0 0 12px;
-  color: #111827;
+  color: var(--text);
 }
 
 /* card wrapper */
 .availability .availability-form,
 .availability > .availability-card {
   background: var(--card);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
   box-shadow: var(--shadow-1);
   padding: 18px;
@@ -57,8 +65,8 @@
   margin-bottom: 12px;
   font-size: 0.95rem;
 }
-.alert-error{ background: #fff5f5; color: var(--danger); border: 1px solid rgba(220,38,38,0.08); }
-.alert-success{ background: #ecfdf5; color: var(--success); border: 1px solid rgba(16,185,129,0.06); }
+.alert-error{ background: rgba(185,28,28,0.15); color: var(--danger); border: 1px solid rgba(248,113,113,0.35); }
+.alert-success{ background: rgba(16,185,129,0.14); color: var(--success); border: 1px solid rgba(16,185,129,0.35); }
 
 /* form inputs */
 .availability-form input[type="text"],
@@ -95,14 +103,17 @@
 /* total cost block */
 .total-cost{
   margin: 12px 0;
-  padding: 10px 12px;
-  background: linear-gradient(90deg, rgba(11,99,214,0.04), transparent);
-  border-radius: 8px;
+  padding: 12px 14px;
+  background: rgba(46,124,246,0.10);
+  border: 1px solid rgba(46,124,246,0.28);
+  border-radius: 10px;
   font-weight: 600;
+  color: var(--text);
 }
 
-/* primary button */
-button{
+/* primary button - scoped so it can't bleed onto buttons elsewhere
+   (this is what was making the "Forgot password?" link look odd) */
+.availability button{
   display: inline-block;
   padding: 10px 16px;
   border-radius: 10px;
@@ -114,14 +125,167 @@ button{
   font-weight: 600;
   transition: transform .08s ease, box-shadow .08s ease, opacity .08s;
 }
-button:active { transform: translateY(1px); }
-button[disabled]{ opacity: .6; cursor: not-allowed; box-shadow: none; }
+.availability button:active { transform: translateY(1px); }
+.availability button[disabled]{ opacity: .6; cursor: not-allowed; box-shadow: none; }
 
 /* small link text */
-.availability p a{ color: var(--accent); text-decoration: none; font-weight: 600; }
+.availability p a{ color: #93c5fd; text-decoration: none; font-weight: 600; }
+.availability p a:hover{ text-decoration: underline; }
 
 /* responsive */
 @media (max-width:720px){
   .availability{ padding: 16px; margin: 12px; }
   .availability .availability-form{ padding: 14px; }
+}
+
+/* ---- labelled fields ---- */
+.field { margin-bottom: 14px; }
+
+.field label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--label);
+  margin-bottom: 6px;
+}
+
+.field__hint {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-top: -4px;
+}
+
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.availability-form select,
+.availability-form .react-datepicker__input-container input {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #e6e9ef;
+  background: #fff;
+  font-size: 0.95rem;
+  box-sizing: border-box;
+  margin-bottom: 4px;
+}
+
+.availability-form .react-datepicker-wrapper { width: 100%; }
+
+.availability-form select:focus,
+.availability-form input:focus {
+  border-color: rgba(11,99,214,0.45);
+  box-shadow: 0 0 0 3px rgba(11,99,214,0.12);
+  outline: none;
+}
+
+.availability-form input:disabled,
+.availability-form select:disabled {
+  background: #f3f4f6;
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.availability__signin-note {
+  background: rgba(46,124,246,0.12);
+  border: 1px solid rgba(46,124,246,0.35);
+  color: #bfdbfe;
+  padding: 10px 14px;
+  border-radius: 8px;
+  margin-bottom: 14px;
+}
+
+.alert-info { background: rgba(46,124,246,0.12); color: #bfdbfe; border: 1px solid rgba(46,124,246,0.35); }
+
+.total-cost__breakdown {
+  display: block;
+  font-weight: 400;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.availability__submit { width: 100%; padding: 12px 16px; font-size: 1rem; }
+
+@media (max-width: 520px) {
+  .field-row { grid-template-columns: 1fr; }
+}
+
+
+/* Inputs keep a light background for readability, so their text must be dark. */
+.availability-form input,
+.availability-form select,
+.availability-form .react-datepicker__input-container input {
+  color: #111827;
+  background: #ffffff;
+}
+.availability-form input::placeholder { color: #9ca3af; }
+
+.availability-form input:disabled,
+.availability-form select:disabled {
+  background: #2a2f38;
+  color: #8b95a5;
+  border-color: var(--border);
+}
+
+/* ---- booking confirmation screen ---- */
+.booking-confirmed { text-align: center; }
+.booking-confirmed__emoji { font-size: 2.75rem; line-height: 1; }
+.booking-confirmed h2 { color: #6ee7b7; margin-top: 0.5rem; }
+.booking-confirmed__blurb { color: var(--muted); margin: 0 0 1.25rem; }
+
+.booking-confirmed__details {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.9rem 1rem;
+  text-align: left;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.1rem 1.25rem;
+  margin: 0 0 1rem;
+}
+.booking-confirmed__wide { grid-column: 1 / -1; }
+.booking-confirmed__details dt {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  margin-bottom: 0.2rem;
+}
+.booking-confirmed__details dd {
+  margin: 0;
+  font-weight: 600;
+  color: var(--text);
+  font-size: 0.95rem;
+}
+.booking-confirmed__details dd small { display:block; font-weight: 400; font-size: 0.76rem; color: var(--muted); }
+.booking-confirmed__details code { font-size: 0.82rem; word-break: break-all; }
+.booking-confirmed__amount { color: var(--success); }
+
+.booking-confirmed__note { color: var(--muted); font-size: 0.88rem; }
+.booking-confirmed__warn {
+  background: rgba(245,158,11,0.12);
+  border: 1px solid rgba(245,158,11,0.35);
+  color: #fcd34d;
+  border-radius: 10px;
+  padding: 0.7rem 0.9rem;
+  font-size: 0.88rem;
+  text-align: left;
+}
+
+.booking-confirmed__actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 1.25rem;
+}
+.booking-confirmed__actions .btn { text-decoration: none; }
+
+@media (max-width: 620px) {
+  .booking-confirmed__details { grid-template-columns: repeat(2, 1fr); }
 }

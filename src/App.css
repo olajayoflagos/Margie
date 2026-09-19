@@ -204,6 +204,15 @@
   border-top:1px solid rgba(12,18,30,0.04);
 }
 
+.footer__instagram {
+  display: inline-block;
+  margin-top: 0.5rem;
+  color: #c13584;
+  font-weight: 600;
+  text-decoration: none;
+}
+.footer__instagram:hover { text-decoration: underline; }
+
 /* small helpers */
 .center { text-align:center; }
 
@@ -415,3 +424,125 @@ body, .margies{ background:#0b0c0f; color:var(--text); font-family: Inter, syste
   .gallery__grid{ grid-template-columns: repeat(2,1fr); }
   .trust{ grid-template-columns: repeat(2,1fr); }
 }
+/* =====================================================================
+   HEADER FIXES - appended last on purpose.
+   This file contains two competing sets of nav rules (a light set at the
+   top and a copy of the dark landing-page theme pasted in below it). The
+   later block wins, so any correction has to live at the very end of the
+   file or it gets silently overridden.
+   ===================================================================== */
+
+/* 1. "Margie's" and "About" were touching: .nav__inner is space-between with
+      no gap, so the brand butted straight into the first nav link. */
+.nav__inner {
+  gap: 2rem;
+  flex-wrap: nowrap;
+}
+
+.brand {
+  flex: none;
+  margin-right: 0.5rem;
+  color: #eef2f7;
+}
+
+.brand__title {
+  color: #eef2f7;
+  white-space: nowrap;
+  font-size: 1.05rem;
+}
+
+.nav__links {
+  gap: 0.35rem;
+  flex-wrap: nowrap;
+  min-width: 0;
+}
+
+.nav__links a {
+  white-space: nowrap;
+  padding: 0.45rem 0.6rem;
+  font-size: 0.95rem;
+  color: #cfd7e3;
+}
+.nav__links a:hover { background: rgba(255, 255, 255, 0.07); color: #fff; }
+
+/* 2. The Logout button was invisible: <button> does not inherit `color`, so
+      it fell back to the browser default (near-black) on a near-black header. */
+.admin-button-link {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #eef2f7;
+  font: inherit;
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding: 0.45rem 0.85rem;
+  border-radius: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, border-color 0.15s;
+}
+.admin-button-link:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.32);
+  color: #fff;
+}
+
+/* 3. The email greeting was pushing the whole bar wider than the window.
+      Truncate it, and keep the full address in the tooltip. */
+.nav-welcome {
+  color: #a3adbd;
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin-left: 0.35rem;
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nav__actions { gap: 0.5rem; flex: none; align-items: center; }
+
+/* Collapse to the hamburger earlier - there are nine items in this bar and
+   they start colliding well before the old 700px breakpoint. */
+@media (max-width: 1100px) {
+  .nav__links {
+    position: absolute;
+    top: 68px;
+    left: 0;
+    right: 0;
+    background: #0f1217;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.35rem;
+    padding: 0.85rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    transform: translateY(-12px);
+    opacity: 0;
+    pointer-events: none;
+    transition: 0.2s ease;
+  }
+  .nav__links.is-open { transform: translateY(0); opacity: 1; pointer-events: auto; }
+  .nav__links a { padding: 0.7rem 0.85rem; border-radius: 8px; }
+  .nav__actions { flex-direction: column; align-items: stretch; margin-top: 0.5rem; }
+  .nav-welcome { max-width: none; text-align: center; }
+  .hamburger { display: inline-block; }
+}
+
+/* Pages that render on the dark body need readable headings. */
+.page h1,
+.section h1,
+.section--narrow h1 { color: #eef2f7; }
+
+.card-panel {
+  background: #14171d;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+.contact-form input,
+.contact-form textarea { color: #111827; background: #fff; }
+.contact-status.success { color: #6ee7b7; }
+.contact-status.error { color: #fca5a5; }
+.contact-status.info { color: #93c5fd; }
+
+.footer { color: #cfd7e3; }
+.footer a { color: #cfd7e3; }

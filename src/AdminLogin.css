@@ -89,6 +89,37 @@ body{ background:var(--bg); color:var(--text); font-family: Inter, system-ui, -a
 }
 .admin-login-button:active{ transform: translateY(1px); }
 
+/* notice text (e.g. "reset link sent") */
+.admin-login-notice{
+  color: #7fe3b4;
+  background: rgba(16,185,129,0.08);
+  padding: 8px 10px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  font-weight: 600;
+  text-align: center;
+}
+
+/* "reset password" link under the submit button */
+.admin-login-forgot{
+  text-align: center;
+  margin: 12px 0 0;
+}
+.admin-login-forgot-btn{
+  appearance: none;
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.85rem;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  padding: 4px 6px;
+}
+.admin-login-forgot-btn:hover{ color: var(--text); }
+.admin-login-forgot-btn:disabled{ opacity: 0.6; cursor: not-allowed; }
+
 /* little helper links (if any) */
 .admin-login-help{
   margin-top: 10px;

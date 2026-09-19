@@ -8,20 +8,29 @@ import {
   useNavigate,
   Navigate,
 } from "react-router-dom";
-import { FaWhatsapp, FaMapMarkerAlt, FaArrowUp } from "react-icons/fa";
+import { FaWhatsapp, FaMapMarkerAlt, FaArrowUp, FaInstagram } from "react-icons/fa";
 import { collection, addDoc, Timestamp } from "firebase/firestore";
 import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
 import { db } from "./firebase";
+import Seo from "./seo/Seo";
+import { friendlyError } from "./utils/errors";
 
 import Login from "./Login";
 import Signup from "./Signup";
 import ResetPassword from "./ResetPassword";
+import VerifyEmail from "./VerifyEmail";
 import MyBookings from "./MyBookings";
 
 import AdminDashboard from "./AdminDashboard";
+import AdminLogin from "./AdminLogin";
+import ProtectedAdminRoute from "./ProtectedAdminRoute";
 import Gallery from "./Gallery";
 import CheckAvailability from "./CheckAvailability";
 import LandingPage from "./LandingPage";
+import RoomPage from "./RoomPage";
+import BlogList from "./blog/BlogList";
+import BlogPost from "./blog/BlogPost";
+import Support from "./Support";
 
 import { Carousel } from "react-responsive-carousel";
 import "react-responsive-carousel/lib/styles/carousel.min.css";
@@ -38,6 +47,7 @@ const whatsappUrl =
   "https://wa.me/+2348035350455?text=I will like to get information about Margies.";
 const mapsUrl =
   "https://maps.app.goo.gl/Qb78GZHA61tEyM7XA?g_st=com.google.maps.preview.copy";
+const instagramUrl = "https://instagram.com/margiesplace_";
 
 // -------- Header component (Landing-style header with hamburger) --------
 function Header({ currentUser, onLogout }) {
@@ -49,6 +59,21 @@ function Header({ currentUser, onLogout }) {
   useEffect(() => {
     setMobileOpen(false);
   }, [location.pathname]);
+
+  // Sections (#about, #rooms, #amenities, #location) only exist on the
+  // homepage. From any other page (e.g. a room page) a plain <a href="#about">
+  // does nothing useful - there's nothing on the current page to scroll to.
+  // This navigates to "/" first (if needed) and then smooth-scrolls once the
+  // homepage content is on screen, so the links work from anywhere on the site.
+  const goToSection = (id) => (e) => {
+    e.preventDefault();
+    setMobileOpen(false);
+    if (location.pathname === "/") {
+      document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    } else {
+      navigate(`/#${id}`);
+    }
+  };
 
   return (
     <header className="nav">
@@ -66,20 +91,23 @@ function Header({ currentUser, onLogout }) {
         </button>
 
         <nav className={`nav__links ${mobileOpen ? "is-open" : ""}`}>
-          <a href="#about" onClick={() => setMobileOpen(false)}>
+          <a href="/#about" onClick={goToSection("about")}>
             About
           </a>
-          <a href="#rooms" onClick={() => setMobileOpen(false)}>
+          <a href="/#rooms" onClick={goToSection("rooms")}>
             Rooms
           </a>
-          <a href="#amenities" onClick={() => setMobileOpen(false)}>
+          <a href="/#amenities" onClick={goToSection("amenities")}>
             Amenities
           </a>
-          <a href="#location" onClick={() => setMobileOpen(false)}>
+          <a href="/#location" onClick={goToSection("location")}>
             Location
           </a>
           <Link to="/gallery" onClick={() => setMobileOpen(false)}>
             Gallery
+          </Link>
+          <Link to="/blog" onClick={() => setMobileOpen(false)}>
+            Guides &amp; Stories
           </Link>
 
           <div className="nav__actions">
@@ -156,14 +184,21 @@ function ContactPage() {
       setContactEmail("");
       setContactMessage("");
     } catch (err) {
-      console.error(err);
-      setStatus({ type: "error", text: "Failed to send. Try again." });
+      setStatus({
+        type: "error",
+        text: friendlyError(err, "We couldn't send your message. Please try again, or reach us on WhatsApp."),
+      });
     }
     setTimeout(() => setStatus(null), 5000);
   };
 
   return (
     <main className="page page--center">
+      <Seo
+        title="Contact Margie's | Gbagada, Lagos"
+        description="Get in touch with Margie's for booking questions, group stays, or anything else."
+        path="/contact"
+      />
       <section className="section section--narrow">
         <h1>Contact Us</h1>
         <div className="card-panel">
@@ -207,11 +242,26 @@ export default function App() {
   const [showScrollTopButton, setShowScrollTopButton] = useState(false);
 
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (user) => setCurrentUser(user));
     return () => unsub();
   }, [auth]);
+
+  // Completes the navigation started by Header's goToSection: once we've
+  // landed on "/" with a #hash (either via the header links above, or a
+  // shared link like margies.com.ng/#amenities), scroll to that section once
+  // its content has painted.
+  useEffect(() => {
+    if (location.pathname === "/" && location.hash) {
+      const id = location.hash.slice(1);
+      const t = setTimeout(() => {
+        document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 80);
+      return () => clearTimeout(t);
+    }
+  }, [location]);
 
   useEffect(() => {
     const onScroll = () => setShowScrollTopButton(window.scrollY > 300);
@@ -271,6 +321,11 @@ export default function App() {
           path="/check"
           element={
             <main className="page page--center">
+              <Seo
+                title="Check Availability & Book | Margie's"
+                description="Check room availability and book your stay at Margie's in Gbagada, Lagos."
+                path="/check"
+              />
               <section className="section section--narrow">
                 <h1>Check Room Availability</h1>
                 <div className="card-panel">
@@ -284,18 +339,61 @@ export default function App() {
         {/* Contact page */}
         <Route path="/contact" element={<ContactPage />} />
 
+        {/* Buy the owner a coffee */}
+        <Route path="/support" element={<Support />} />
+
+        {/* Rooms - each gets its own indexable URL, meta tags and schema */}
+        <Route path="/rooms/:slug" element={<RoomPage />} />
+
+        {/* Guides & Stories (blog / articles CMS) */}
+        <Route path="/blog" element={<BlogList />} />
+        <Route path="/blog/:slug" element={<BlogPost />} />
+
         {/* Other routes */}
         <Route path="/gallery" element={<Gallery />} />
         <Route path="/login" element={<Login />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/signup" element={<Signup />} />
         <Route
+          path="/verify-email"
+          element={
+            currentUser ? (
+              <VerifyEmail user={currentUser} />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
+        <Route
           path="/my-bookings"
-          element={currentUser ? <MyBookings /> : <Navigate to="/login" replace />}
+          element={
+            currentUser ? (
+              <>
+                <Seo
+                  title="My Bookings | Margie's"
+                  description="View and manage your bookings at Margie's."
+                  path="/my-bookings"
+                  noindex
+                />
+                <MyBookings />
+              </>
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
         />
 
-        {/* Admin dashboard route example (secured by uid in your admin login component or auth) */}
-        <Route path="/admin" element={<AdminDashboard />} />
+        {/* Admin: /admin-login signs in, /admin is gated by a real custom
+            claim check (ProtectedAdminRoute), not a hidden client-side UID. */}
+        <Route path="/admin-login" element={<AdminLogin />} />
+        <Route
+          path="/admin"
+          element={
+            <ProtectedAdminRoute>
+              <AdminDashboard />
+            </ProtectedAdminRoute>
+          }
+        />
       </Routes>
 
       {/* Floating actions */}
@@ -319,6 +417,15 @@ export default function App() {
           Privacy Policy
         </a>{" "}
         | <a href="/Terms_Conditions_Margies.pdf" download>Terms &amp; Conditions</a>
+        <br />
+        <Link to="/support" className="footer__coffee">
+          ☕ Buy the owner a coffee
+        </Link>
+        <br />
+        <a href={instagramUrl} target="_blank" rel="noopener noreferrer" className="footer__instagram">
+          <FaInstagram style={{ verticalAlign: "-2px", marginRight: "4px" }} />
+          @margiesplace_
+        </a>
       </footer>
     </div>
   );

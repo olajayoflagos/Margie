@@ -1,0 +1,17 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /admin-login
+Disallow: /my-bookings
+Disallow: /login
+Disallow: /signup
+Disallow: /reset-password
+
+# Let search and social preview bots fetch images and JS so pages render fully
+User-agent: Googlebot
+Allow: /
+Disallow: /admin
+Disallow: /admin-login
+Disallow: /my-bookings
+
+Sitemap: https://www.margies.com.ng/sitemap.xml

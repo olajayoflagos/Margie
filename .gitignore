@@ -1,1 +1,5 @@
 node_modules
+
+# Firebase Functions secrets
+functions/.env
+.env.local

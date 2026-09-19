@@ -1,0 +1,47 @@
+.room-hero { position: relative; height: 46vh; min-height: 280px; overflow: hidden; }
+.room-hero__img { width: 100%; height: 100%; object-fit: cover; }
+.room-hero__overlay { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0.15), rgba(0,0,0,0.55)); }
+.room-hero__content { position: absolute; bottom: 24px; left: 0; right: 0; color: #fff; }
+.room-hero__content h1 { margin: 0 0 6px; font-size: 2rem; }
+.room-hero__price { font-weight: 600; font-size: 1.1rem; }
+.room-body { padding: 32px 16px; max-width: 900px; }
+.room-description { font-size: 1.05rem; line-height: 1.6; }
+.room-perks { display: flex; flex-wrap: wrap; gap: 10px; list-style: none; padding: 0; margin: 16px 0 24px; }
+.room-perks li { background: #0b0c11; color: #aeb7c6; border: 1px solid rgba(255,255,255,.09); padding: 6px 14px; border-radius: 999px; font-size: 0.9rem; }
+.room-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; margin-bottom: 24px; }
+.room-gallery img { width: 100%; height: 140px; object-fit: cover; border-radius: 8px; }
+.room-cta { display: inline-block; }
+.other-rooms { padding: 0 16px 48px; max-width: 900px; }
+.other-rooms__grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+.other-rooms__card { display: block; text-decoration: none; color: inherit; }
+.other-rooms__card img { width: 100%; height: 110px; object-fit: cover; border-radius: 8px; }
+.other-rooms__card span { display: block; margin-top: 6px; font-size: 0.9rem; }
+
+.breadcrumbs {
+  font-size: 0.85rem;
+  color: #8b93a1;
+  padding: 0.75rem 0;
+}
+.breadcrumbs a { color: #6fb3ff; text-decoration: none; }
+.breadcrumbs a:hover { text-decoration: underline; }
+
+.room-hero__tagline {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 400;
+  opacity: 0.9;
+  margin-top: 0.25rem;
+}
+
+.room-occupancy { color: #aeb7c6; font-size: 0.95rem; }
+
+.room-story {
+  background: #0f1217;
+  border: 1px solid rgba(255,255,255,.06);
+  border-radius: 14px;
+  padding: 24px;
+  margin: 24px 0 32px;
+}
+.room-story h2 { margin-top: 0; }
+.room-story p { color: #cfd7e3; line-height: 1.7; font-size: 1.02rem; margin: 0; }
+.room-story p + p { margin-top: 12px; }

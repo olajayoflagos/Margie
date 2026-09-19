@@ -1,14 +1,13 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import "./LandingPage.css";
+import Seo from "./seo/Seo";
+import { lodgingBusinessSchema } from "./seo/schema";
+import { rooms, gallery } from "./data/rooms";
 
 // Images — update paths if yours differ
 import logo from "./assets/margies logo.jpg";
 import heroImg from "./assets/Aapartment3.jpg";
-import roomDiamond from "./assets/Aadiamond1.jpg";
-import roomEmerald from "./assets/Aaemerald1.jpg";
-import roomOnyx from "./assets/Aronyx3.jpg";
-import roomBronzite from "./assets/Arbronzite1.jpg";
 import apt2 from "./assets/Aapartment5.jpg";
 
 const whatsappUrl =
@@ -16,57 +15,17 @@ const whatsappUrl =
 const mapsUrl =
   "https://maps.app.goo.gl/Qb78GZHA61tEyM7XA?g_st=com.google.maps.preview.copy";
 
-// Rooms & gallery moved outside the component to avoid re-creation on every render
-const rooms = [
-  {
-    name: "The Apartment",
-    img: heroImg,
-    perks: ["2 Bedrooms", "City View", "Kitchenette"],
-    price: "₦127,500 / night",
-    description:
-      "A roomy, city-facing apartment perfect for families or longer stays — combines privacy with a small kitchenette for light meals.",
-  },
-  {
-    name: "Room Diamond",
-    img: roomDiamond,
-    perks: ["Queen Bed", "Smart TV", "Workspace"],
-    price: "₦59,500 / night",
-    description:
-      "Bright and comfortable, Room Diamond is ideal for business travellers who need a dedicated workspace and reliable connectivity.",
-  },
-  {
-    name: "Room Emerald",
-    img: roomEmerald,
-    perks: ["Cozy Bed", "AC", "Fast Wi-Fi"],
-    price: "₦59,500 / night",
-    description:
-      "A cozy, air-conditioned room with fast Wi‑Fi — great for guests who want comfort without fuss.",
-  },
-  {
-    name: "Room Onyx",
-    img: roomOnyx,
-    perks: ["Warm Lighting", "Wardrobe", "Ensuite"],
-    price: "₦34,000 / night",
-    description:
-      "Compact and well-laid-out, Room Onyx offers a private ensuite and warm lighting for a relaxed stay.",
-  },
-  {
-    name: "Room Bronzite",
-    img: roomBronzite,
-    perks: ["Budget-friendly", "Clean", "Comfortable"],
-    price: "₦59,500 / night",
-    description:
-      "Budget-conscious without sacrificing quality — Bronzite is tidy, comfortable, and good value for short stays.",
-  },
-];
-
-const gallery = [heroImg, apt2, roomDiamond, roomEmerald, roomOnyx, roomBronzite];
-
 export default function LandingPage() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
     <div className="margies">
+      <Seo
+        title="Margie's | Rooms & Apartment in Gbagada, Lagos"
+        description="Live Lagos, not just visit it. Book private rooms and a city-view apartment above a vibrant local spot in Gbagada, Lagos."
+        path="/"
+        schema={lodgingBusinessSchema()}
+      />
       {/* NAVBAR can be provided by App wrapper */}
 
       {/* HERO */}
@@ -138,12 +97,14 @@ export default function LandingPage() {
 
         <div className="rooms__grid">
           {rooms.map((r) => (
-            <article className="room-card" key={r.name}>
-              <div className="room-card__image">
+            <article className="room-card" key={r.slug}>
+              <Link to={`/rooms/${r.slug}`} className="room-card__image">
                 <img src={r.img} alt={r.name} />
-              </div>
+              </Link>
               <div className="room-card__body">
-                <h3>{r.name}</h3>
+                <h3>
+                  <Link to={`/rooms/${r.slug}`}>{r.name}</Link>
+                </h3>
                 <ul className="room-card__perks">
                   {r.perks.map((p, i) => (
                     <li key={i}>{p}</li>
@@ -153,8 +114,12 @@ export default function LandingPage() {
                 <p className="room-card__desc">{r.description}</p>
 
                 <div className="room-card__footer">
-                  <span className="price">{r.price}</span>
-                  <Link to="/check" className="btn btn--sm btn--primary">
+                  <span className="price">₦{r.price.toLocaleString()} / night</span>
+                  <Link
+                    to="/check"
+                    state={{ preselectedRoomId: r.id }}
+                    className="btn btn--sm btn--primary"
+                  >
                     Reserve
                   </Link>
                 </div>
@@ -239,7 +204,42 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* TESTIMONIALS, LOCATION, CTA & FOOTER remain unchanged (omitted here for brevity) */}
+      {/* LOCATION */}
+      <section id="location" className="location">
+        <div className="container location__inner">
+          <div className="location__text">
+            <div className="section-head section-head--left">
+              <h2>Find Us</h2>
+              <p>Right in the heart of Gbagada, close to everything that matters.</p>
+            </div>
+            <p>
+              <strong>43, Oguntona Crescent, Gbagada Phase 1, Lagos.</strong> Above a
+              popular local restaurant, directly opposite a well-stocked supermarket, and
+              a short stroll from the suya spots that come alive at night.
+            </p>
+            <ul className="location__list">
+              <li>🛒 Supermarket right across the street</li>
+              <li>🍢 Suya & local food steps away</li>
+              <li>🚕 Easy access to the Third Mainland Bridge and the rest of Lagos</li>
+              <li>🔒 Quiet, secure residential street</li>
+            </ul>
+            <a href={mapsUrl} target="_blank" rel="noreferrer" className="btn btn--primary">
+              Get Directions on Google Maps
+            </a>
+          </div>
+          <div className="location__map">
+            <iframe
+              title="Margie's location map"
+              src="https://www.google.com/maps?q=43+Oguntona+Crescent+Gbagada+Phase+1+Lagos&output=embed"
+              width="100%"
+              height="100%"
+              style={{ border: 0 }}
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+            />
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

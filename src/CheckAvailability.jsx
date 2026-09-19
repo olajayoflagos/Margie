@@ -1,222 +1,407 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, Link } from "react-router-dom";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { differenceInDays } from "date-fns";
-import { collection, getDocs, addDoc, serverTimestamp } from "firebase/firestore";
+import { collection, getDocs } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
-import { db, auth } from "./firebase";
-import { checkRoomAvailability } from "./bookingService";
+import { httpsCallable } from "firebase/functions";
+import { db, auth, functions } from "./firebase";
+import { friendlyError } from "./utils/errors";
+import { formatDate, formatNaira, CHECK_IN_HOUR, CHECK_OUT_HOUR } from "./utils/bookingTime";
+import { PAYSTACK_PUBLIC_KEY } from "./config";
 import "./CheckAvailability.css";
+
+const checkAvailabilityFn = httpsCallable(functions, "checkAvailability");
+const verifyPaystackPaymentFn = httpsCallable(functions, "verifyPaystackPayment");
+
+const MAX_GUESTS = 10;
+const naira = formatNaira;
+const hour12 = (h) => (h === 12 ? "12:00 noon" : h > 12 ? `${h - 12}:00 PM` : `${h}:00 AM`);
+
+// Margie's own booking confirmation email is sent server-side by the
+// notifyOnNewBooking Cloud Function (functions/index.js) the moment
+// verifyPaystackPayment writes the confirmed booking - it doesn't depend on
+// this tab staying open, so there's nothing to trigger from here.
 
 export default function CheckAvailability() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const preselectedRoomId = location.state?.preselectedRoomId;
 
-  // Form state
   const [rooms, setRooms] = useState([]);
-  const [selectedRoom, setSelectedRoom] = useState(null);
+  const [selectedRoomId, setSelectedRoomId] = useState("");
   const [guestName, setGuestName] = useState("");
   const [guestEmail, setGuestEmail] = useState("");
   const [partySize, setPartySize] = useState(1);
   const [checkIn, setCheckIn] = useState(null);
   const [checkOut, setCheckOut] = useState(null);
 
-  // UI state
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState({ type: "", text: "" });
 
-  // Load auth state
+  // Set as soon as Paystack confirms payment, so the guest always gets a
+  // confirmation screen even if our own follow-up steps stumble.
+  const [confirmed, setConfirmed] = useState(null);
+
+  const selectedRoom = rooms.find((r) => r.id === selectedRoomId) || null;
+
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, u => setUser(u));
+    const unsub = onAuthStateChanged(auth, (u) => {
+      setUser(u);
+      if (u?.email) setGuestEmail((prev) => prev || u.email);
+      if (u?.displayName) setGuestName((prev) => prev || u.displayName);
+    });
     return () => unsub();
   }, []);
 
-  // Load available rooms once
   useEffect(() => {
     (async () => {
       setLoading(true);
       try {
         const snap = await getDocs(collection(db, "rooms"));
-        setRooms(
-          snap.docs
-            .map(d => ({ id: d.id, ...d.data() }))
-            .filter(r => r.available)
-        );
+        const loaded = snap.docs.map((d) => ({ id: d.id, ...d.data() })).filter((r) => r.available);
+        setRooms(loaded);
+        if (preselectedRoomId && loaded.some((r) => r.id === preselectedRoomId)) {
+          setSelectedRoomId(preselectedRoomId);
+        }
       } catch (err) {
-        console.error(err);
-        setMsg({ type: "error", text: "Failed to load rooms." });
+        setMsg({
+          type: "error",
+          text: friendlyError(err, "We couldn't load our rooms just now. Please refresh and try again."),
+        });
       } finally {
         setLoading(false);
       }
     })();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [preselectedRoomId]);
+
+  const nights = checkIn && checkOut ? differenceInDays(checkOut, checkIn) : 0;
+  const total = selectedRoom && nights > 0 ? selectedRoom.price * nights : 0;
 
   const handleBookAndPay = async () => {
     setMsg({ type: "", text: "" });
 
-    // Validation
-    if (!guestName || !guestEmail || partySize < 1) {
-      return setMsg({ type: "error", text: "Enter name, email & party size." });
-    }
-    if (!user) {
-      return navigate("/login");
-    }
-    if (!selectedRoom || !checkIn || !checkOut || checkIn >= checkOut) {
-      return setMsg({ type: "error", text: "Select room & valid dates." });
+    if (!user) return navigate("/login", { state: { from: "/check" } });
+
+    // Browsing rooms and availability is open to anyone; only the actual
+    // booking/checkout step requires a verified email. Google accounts are
+    // always considered verified since Google already confirmed the address.
+    const isGoogleAccount = user.providerData?.some((p) => p.providerId === "google.com");
+    if (!user.emailVerified && !isGoogleAccount) {
+      return navigate("/verify-email");
     }
 
+    if (!guestName.trim()) return setMsg({ type: "error", text: "Please enter the name the booking is under." });
+    if (!guestEmail.trim()) return setMsg({ type: "error", text: "Please enter an email address for your receipt." });
+    if (!selectedRoom) return setMsg({ type: "error", text: "Please choose a room." });
+    if (!checkIn || !checkOut) return setMsg({ type: "error", text: "Please choose your check-in and check-out dates." });
+    if (nights < 1) return setMsg({ type: "error", text: "Your check-out date must be after your check-in date." });
+
     setLoading(true);
-    const nights = differenceInDays(checkOut, checkIn);
+    const checkInStr = checkIn.toISOString().slice(0, 10);
+    const checkOutStr = checkOut.toISOString().slice(0, 10);
+
     try {
-      // Check availability
-      const ok = await checkRoomAvailability({
+      const { data: availability } = await checkAvailabilityFn({
         roomId: selectedRoom.id,
-        start: checkIn.toISOString().slice(0, 10),
-        end: checkOut.toISOString().slice(0, 10),
+        checkIn: checkInStr,
+        checkOut: checkOutStr,
       });
-      if (!ok) {
-        setMsg({ type: "error", text: "Room not available for those dates." });
+      if (!availability.available) {
+        setMsg({
+          type: "error",
+          text: "That room is already taken for those dates. Please try different dates or another room.",
+        });
         return;
       }
 
-      // Compute amount
-      const amountPaid = selectedRoom.price * nights;
-
-      // Launch Paystack
-      if (window.PaystackPop && typeof window.PaystackPop.setup === "function") {
-        const paystack = window.PaystackPop.setup({
-          key: 'pk_live_cb4309974c3aa9a757e93deee00f318d7b4ce241',
-          email: guestEmail,
-          amount: amountPaid * 100, // Paystack expects amount in kobo
-          currency: "NGN",
-          ref: "" + Math.floor(Math.random() * 1000000000 + 1),
-          callback: function (res) {
-            (async () => {
-              try {
-                await addDoc(collection(db, "bookings"), {
-                  guestName,
-                  guestEmail,
-                  partySize,
-                  roomId: selectedRoom.id,
-                  roomName: selectedRoom.name,
-                  checkIn: checkIn.toISOString().slice(0,10),
-                  checkOut: checkOut.toISOString().slice(0,10),
-                  nights,
-                  amountPaid,
-                  paymentRef: res.reference,
-                  status: "active",
-                  createdAt: serverTimestamp(),
-                  userId: user.uid,
-                });
-                setMsg({ type: "success", text: "Booking confirmed!" });
-              } catch (err) {
-                console.error(err);
-                setMsg({ type: "error", text: "Failed to save booking after payment." });
-              }
-            })();
-          },
-          onClose: function () {
-            setMsg({ type: "error", text: "Payment cancelled." });
-          },
-        });
-        paystack.openIframe();
-      } else {
+      if (!window.PaystackPop || typeof window.PaystackPop.setup !== "function") {
         setMsg({
           type: "error",
-          text: "Could not initialize Paystack. Try again later.",
+          text: "Our payment window couldn't start. Please refresh the page, or contact us to book directly.",
         });
+        return;
       }
-    } catch (e) {
-      console.error(e);
+
+      const paystack = window.PaystackPop.setup({
+        key: PAYSTACK_PUBLIC_KEY,
+        email: guestEmail,
+        amount: total * 100,
+        currency: "NGN",
+        ref: "" + Math.floor(Math.random() * 1000000000 + 1),
+        metadata: {
+          custom_fields: [
+            { display_name: "Room", variable_name: "room", value: selectedRoom.name },
+            { display_name: "Guests", variable_name: "guests", value: String(partySize) },
+          ],
+        },
+        callback: function (res) {
+          (async () => {
+            const reference = res.reference;
+            const details = {
+              reference,
+              roomName: selectedRoom.name,
+              checkIn: checkInStr,
+              checkOut: checkOutStr,
+              nights,
+              partySize,
+              guestName,
+              guestEmail,
+              total,
+            };
+
+            setMsg({ type: "info", text: "Payment received - confirming your booking…" });
+            setLoading(false);
+
+            try {
+              // The client never writes "confirmed" to Firestore itself. The
+              // Cloud Function re-verifies the payment with Paystack first.
+              await verifyPaystackPaymentFn({
+                reference,
+                roomId: selectedRoom.id,
+                checkIn: checkInStr,
+                checkOut: checkOutStr,
+                guestName,
+                guestEmail,
+                partySize,
+              });
+
+              setMsg({ type: "", text: "" });
+              setConfirmed({ ...details, recorded: true });
+            } catch (err) {
+              // The money moved but our record didn't. Still show the
+              // confirmation with the reference - that reference is what makes
+              // this recoverable - and flag it quietly rather than alarming them.
+              if (import.meta.env.DEV) console.warn("[booking] verify failed", err);
+              setMsg({ type: "", text: "" });
+              setConfirmed({
+                ...details,
+                recorded: false,
+                problem: friendlyError(
+                  err,
+                  "We couldn't finish confirming this automatically - please contact us with the reference below."
+                ),
+              });
+            }
+          })();
+        },
+        onClose: function () {
+          setMsg({
+            type: "info",
+            text: "Payment was cancelled. Your dates are still selected if you'd like to try again.",
+          });
+        },
+      });
+      paystack.openIframe();
+    } catch (err) {
       setMsg({
         type: "error",
-        text: "Unexpected error. Please try again.",
+        text: friendlyError(err, "We couldn't complete that just now. Please try again in a moment."),
       });
     } finally {
       setLoading(false);
     }
   };
 
+  // ---------- confirmation screen ----------
+  if (confirmed) {
+    return (
+      <div className="availability booking-confirmed">
+        <div className="booking-confirmed__emoji" aria-hidden="true">🎉</div>
+        <h2>Thank you - your booking is confirmed!</h2>
+        <p className="booking-confirmed__blurb">
+          We can&apos;t wait to host you, {confirmed.guestName.split(" ")[0]}. Here are your details.
+        </p>
+
+        <dl className="booking-confirmed__details">
+          <div>
+            <dt>Room</dt>
+            <dd>{confirmed.roomName}</dd>
+          </div>
+          <div>
+            <dt>Check-in</dt>
+            <dd>
+              {formatDate(confirmed.checkIn)}
+              <small>from {hour12(CHECK_IN_HOUR)}</small>
+            </dd>
+          </div>
+          <div>
+            <dt>Check-out</dt>
+            <dd>
+              {formatDate(confirmed.checkOut)}
+              <small>by {hour12(CHECK_OUT_HOUR)}</small>
+            </dd>
+          </div>
+          <div>
+            <dt>Nights</dt>
+            <dd>{confirmed.nights}</dd>
+          </div>
+          <div>
+            <dt>Guests</dt>
+            <dd>
+              {confirmed.partySize} {confirmed.partySize === 1 ? "guest" : "guests"}
+            </dd>
+          </div>
+          <div>
+            <dt>Total paid</dt>
+            <dd className="booking-confirmed__amount">{naira(confirmed.total)}</dd>
+          </div>
+          <div className="booking-confirmed__wide">
+            <dt>Payment reference</dt>
+            <dd>
+              <code>{confirmed.reference}</code>
+            </dd>
+          </div>
+        </dl>
+
+        <p className="booking-confirmed__note">
+          {confirmed.recorded
+            ? `We're emailing these details to ${confirmed.guestEmail} now, and Paystack will send its payment receipt separately.`
+            : `Paystack has emailed your payment receipt to ${confirmed.guestEmail}.`}
+        </p>
+
+        {confirmed.problem && (
+          <p className="booking-confirmed__warn">
+            {confirmed.problem} Please keep the reference above - it&apos;s all we need to put this
+            right.
+          </p>
+        )}
+
+        <div className="booking-confirmed__actions">
+          <Link className="btn btn--primary" to="/my-bookings">
+            View my bookings
+          </Link>
+          <Link className="btn" to="/">
+            Back to home
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="availability">
-      <h2>Check & Book a Room</h2>
-      {loading && <div className="spinner"></div>}
+      <h2>Check &amp; Book a Room</h2>
+
       {msg.text && (
-        <div className={`alert alert-${msg.type}`}>{msg.text}</div>
+        <div className={`alert alert-${msg.type}`} role="status" aria-live="polite">
+          {msg.text}
+        </div>
       )}
 
-      <div className="availability-form">
-        <input
-          type="text"
-          placeholder="Full Name"
-          value={guestName}
-          onChange={e => setGuestName(e.target.value)}
-          disabled={!user}
-        />
-        <input
-          type="email"
-          placeholder="Email Address"
-          value={guestEmail}
-          onChange={e => setGuestEmail(e.target.value)}
-          disabled={!user}
-        />
-        <input
-          type="number"
-          placeholder="Number of Individuals"
-          min="1"
-          value={partySize}
-          onChange={e => setPartySize(Math.max(1, +e.target.value))}
-          disabled={!user}
-        />
-      </div>
-
-      {!user && <p><a href="/login">Log in</a> to book.</p>}
-
-      <select
-        disabled={!user}
-        onChange={e => setSelectedRoom(JSON.parse(e.target.value))}
-        defaultValue=""
-      >
-        <option value="" disabled>
-          Select Room
-        </option>
-        {rooms.map(r => (
-          <option key={r.id} value={JSON.stringify(r)}>
-            {r.name} – ₦{r.price}/night
-          </option>
-        ))}
-      </select>
-
-      <DatePicker
-        selected={checkIn}
-        onChange={date => setCheckIn(date)}
-        placeholderText="Check-in Date"
-        minDate={new Date()}
-        disabled={!user}
-      />
-      <DatePicker
-        selected={checkOut}
-        onChange={date => setCheckOut(date)}
-        placeholderText="Check-out Date"
-        minDate={checkIn || new Date()}
-        disabled={!user}
-      />
-
-      {selectedRoom && checkIn && checkOut && (
-        <p className="total-cost">
-          {selectedRoom.name}: ₦{selectedRoom.price}×
-          {differenceInDays(checkOut, checkIn)} = ₦
-          {selectedRoom.price * differenceInDays(checkOut, checkIn)}
+      {!user && (
+        <p className="availability__signin-note">
+          <Link to="/login">Log in</Link> or <Link to="/signup">create an account</Link> to make a booking.
         </p>
       )}
 
-      <button
-        onClick={handleBookAndPay}
-        disabled={loading || !user}
-      >
+      <div className="availability-form">
+        <div className="field">
+          <label htmlFor="guestName">Full name</label>
+          <input
+            id="guestName"
+            type="text"
+            placeholder="e.g. Chinedu Okafor"
+            value={guestName}
+            onChange={(e) => setGuestName(e.target.value)}
+            disabled={!user}
+          />
+        </div>
+
+        <div className="field">
+          <label htmlFor="guestEmail">Email address</label>
+          <input
+            id="guestEmail"
+            type="email"
+            placeholder="We'll send your receipt here"
+            value={guestEmail}
+            onChange={(e) => setGuestEmail(e.target.value)}
+            disabled={!user}
+          />
+        </div>
+
+        <div className="field">
+          <label htmlFor="partySize">How many people are lodging?</label>
+          <select
+            id="partySize"
+            value={partySize}
+            onChange={(e) => setPartySize(Number(e.target.value))}
+            disabled={!user}
+          >
+            {Array.from({ length: MAX_GUESTS }, (_, i) => i + 1).map((n) => (
+              <option key={n} value={n}>
+                {n} {n === 1 ? "guest" : "guests"}
+              </option>
+            ))}
+          </select>
+          <small className="field__hint">
+            Total number of people who will be staying in the room.
+          </small>
+        </div>
+
+        <div className="field">
+          <label htmlFor="roomSelect">Room</label>
+          <select
+            id="roomSelect"
+            disabled={!user}
+            value={selectedRoomId}
+            onChange={(e) => setSelectedRoomId(e.target.value)}
+          >
+            <option value="">Select a room</option>
+            {rooms.map((r) => (
+              <option key={r.id} value={r.id}>
+                {r.name} - {naira(r.price)} / night
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="field-row">
+          <div className="field">
+            <label htmlFor="checkIn">Check-in date</label>
+            <DatePicker
+              id="checkIn"
+              selected={checkIn}
+              onChange={(date) => setCheckIn(date)}
+              placeholderText="Select a date"
+              minDate={new Date()}
+              dateFormat="dd MMM yyyy"
+              disabled={!user}
+            />
+          </div>
+          <div className="field">
+            <label htmlFor="checkOut">Check-out date</label>
+            <DatePicker
+              id="checkOut"
+              selected={checkOut}
+              onChange={(date) => setCheckOut(date)}
+              placeholderText="Select a date"
+              minDate={checkIn || new Date()}
+              dateFormat="dd MMM yyyy"
+              disabled={!user}
+            />
+          </div>
+        </div>
+      </div>
+
+      {selectedRoom && nights > 0 && (
+        <p className="total-cost">
+          {selectedRoom.name} · {partySize} {partySize === 1 ? "guest" : "guests"} · {nights}{" "}
+          {nights === 1 ? "night" : "nights"} — <strong>{naira(total)}</strong>
+          <span className="total-cost__breakdown">
+            {naira(selectedRoom.price)} × {nights}
+          </span>
+        </p>
+      )}
+
+      <button className="availability__submit" onClick={handleBookAndPay} disabled={loading || !user}>
         {loading ? "Processing…" : "Book & Pay"}
       </button>
+
+      {loading && <span className="spinner" aria-label="Loading" />}
     </div>
   );
 }
